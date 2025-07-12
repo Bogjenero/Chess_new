@@ -7,10 +7,9 @@
 #include <time.h>
 #include <iostream>
 #include <fstream>
-#include <windows.h>
-#include "resource.h"
+//#include <windows.h>
+//#include "resource.h"
 #include "Iscrtavanje.h"
-
 
 
 using namespace sf;
@@ -30,12 +29,16 @@ int main()
 								"./images/Pieces/Default/bb.png",
 								"./images/Pieces/Default/bk.png",
 								"./images/Pieces/Default/bq.png" };
+
+
 	chessWin temp;
 	chessWin window(800, 800, temp.load_string(CHESS), defaultTheme);
 
 	while (window.Update())
 	{
 	
+	
+
 	}
 	return 0;
 }

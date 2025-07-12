@@ -1,27 +1,41 @@
-﻿
-#include "Iscrtavanje.h"
+﻿#include "Iscrtavanje.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
+
+
 #include "Board.h"
-#include "resource.h"
-#include <windows.h>
-#include <windowsx.h>
 
-std::wstring chessWin::load_string(UINT uID) {
-    HMODULE hInstance = GetModuleHandle(nullptr);
 
-    const int maxBufferSize = 128;
-    wchar_t buffer[maxBufferSize];
 
-    int length = LoadStringW(hInstance, uID, buffer, maxBufferSize);
-    if (length == 0) {
-        return L"";
-    }
-    return std::wstring(buffer);
+const std::map <Strings, std::wstring> chessWin::stringMap = {
+
+    { START, L"Start Game" },
+    { VICTORY, L"Victory!" },
+    { WHITE_WINS, L"White Wins!" },
+    { BLACK_WINS, L"Black Wins!" },
+    { DRAW, L"Draw!" },
+    { OK, L"OK" },
+    { CHESS, L"Chess Game" },
+    { FINISH, L"Finish the game" },
+    { ENDWINDOW, L"End window" }
+};
+
+
+
+
+
+std::wstring chessWin::load_string(Strings uID) {
+
+    static const std::wstring emptyString = L"";
+    auto it = stringMap.find(uID);
+    return (it != stringMap.end()) ? it->second : emptyString;
+
 }
 
+chessWin::chessWin(): buttonText( font, load_string(START), 30 ){}
+sf::Texture emptyTexture; 
 
-
+chessPiece::chessPiece() : Sprite(emptyTexture) {}
 
 
 const std::string defaultTheme[12] = {
@@ -45,9 +59,10 @@ void chessWin::FitToHolder()
     {
         for (int j = 0; j < 8; ++j)
         {
-            boardSquares[i][j].setPosition(sf::Vector2f(Holder.left + (i * Holder.width / 8), Holder.top + (j * Holder.height / 8)));
-            boardSquares[i][j].setSize(sf::Vector2f(Holder.width / 8, Holder.height / 8));
+            boardSquares[i][j].setPosition(sf::Vector2f(Holder.position.x + (i * Holder.size.x / 8), Holder.position.y + (j * Holder.size.y / 8)));
+            boardSquares[i][j].setSize(sf::Vector2f(Holder.size.x / 8, Holder.size.y / 8));
         }
+
     }
 }
 void chessWin::DrawSquares()
@@ -77,8 +92,9 @@ void chessWin::MapPieces()
 
         if (chessPieces[i].draw == 1)
         {
-            chessPieces[i].Sprite.setPosition(sf::Vector2f(Holder.left + (chessPieces[i].x * Holder.width / 8), Holder.top + (chessPieces[i].y * Holder.height / 8)));
-            chessPieces[i].Sprite.setScale(Holder.width / 1600.f, Holder.height / 1600.f);
+            
+            chessPieces[i].Sprite.setPosition(sf::Vector2f(Holder.position.x + (chessPieces[i].x * Holder.size.x / 8), Holder.position.y + (chessPieces[i].y * Holder.size.y / 8)));
+            chessPieces[i].Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
         }
     }
 }
@@ -98,16 +114,16 @@ void chessWin::MapPieces(move curr)
             {
                 chessPieces[i].draw = 0;
                 capture = true;
+                }
+                chessPieces[i].Sprite.setPosition(sf::Vector2f(Holder.position.x + (chessPieces[i].x * Holder.size.x / 8), Holder.position.y + (chessPieces[i].y * Holder.size.y / 8)));
+                chessPieces[i].Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
             }
-            chessPieces[i].Sprite.setPosition(sf::Vector2f(Holder.left + (chessPieces[i].x * Holder.width / 8), Holder.top + (chessPieces[i].y * Holder.height / 8)));
-            chessPieces[i].Sprite.setScale(Holder.width / 1600.f, Holder.height / 1600.f);
         }
-    }
-    current->x = curr.to.x;
-    current->y = curr.to.y;
+        current->x = curr.to.x;
+        current->y = curr.to.y;
 
-    current->Sprite.setPosition(sf::Vector2f(Holder.left + (current->x * Holder.width / 8), Holder.top + (current->y * Holder.height / 8)));
-    current->Sprite.setScale(Holder.width / 1600.f, Holder.height / 1600.f);
+        current->Sprite.setPosition(sf::Vector2f(Holder.position.x + (current->x * Holder.size.x / 8), Holder.position.y + (current->y * Holder.size.y / 8)));
+        current->Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
 }
 void chessWin::RemovePieceAt(const Point& position)
 {
@@ -125,10 +141,10 @@ void chessWin::RemovePieceAt(const Point& position)
 
                 
                 chessPieces[i].Sprite.setPosition(sf::Vector2f(
-                    Holder.left + (chessPieces[i].x * Holder.width / 8),
-                    Holder.top + (chessPieces[i].y * Holder.height / 8)
+                    Holder.position.x + (chessPieces[i].x * Holder.size.x / 8),
+                    Holder.position.y + (chessPieces[i].y * Holder.size.y / 8)
                 ));
-                chessPieces[i].Sprite.setScale(Holder.width / 1600.f, Holder.height / 1600.f);
+                chessPieces[i].Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
                 return;
             }
         }
@@ -164,6 +180,9 @@ int setTexture(Figure currFigure)
         {
             return 5;
         }
+        else {
+            return -1; 
+        }
     }
     else {
         if (currFigure.figure == Figure::Pawn)
@@ -191,32 +210,34 @@ int setTexture(Figure currFigure)
             return 11;
         }
 
+        else {
+            return -1; 
+        }
+
     }
 }
-chessWin::chessWin() {
 
-}
 
-chessWin::chessWin(int width, int height, std::wstring name, const std::string imgPath[12])
+chessWin::chessWin(int width,  int height, std::wstring name, const std::string imgPath[12]): buttonText(font, load_string(START), 30)  
 {
+
     state = GameState::StartScreen;
     sX = width;
     sY = height;
-    Holder.left = 0;
-    Holder.top = 0;
-    Holder.width = width;
-    Holder.height = height;
+    Holder.position.x = 0;
+    Holder.position.y = 0;
+    Holder.size.x = width;
+    Holder.size.y = height;
     button.setSize(sf::Vector2f(200, 100));
-    button.setPosition(300, 350);
+    button.setPosition(sf::Vector2f(300, 350));
     button.setFillColor(sf::Color::Blue);
     
-    font.loadFromFile("arial.ttf");
-    buttonText.setFont(font);
-    buttonText.setString(load_string(START));
-    buttonText.setCharacterSize(30);
+    if (!font.openFromFile("arial.ttf")) {
+       throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
+    }
     buttonText.setFillColor(sf::Color::White);
 
-    buttonText.setPosition(350,383);
+    buttonText.setPosition(sf::Vector2f(350,383));
     for (int i = 0; i < 8; ++i)
     {
         for (int j = 0; j < 8; ++j)
@@ -230,7 +251,16 @@ chessWin::chessWin(int width, int height, std::wstring name, const std::string i
     sf::IntRect blank;
     for (int i = 0; i < 12; ++i)
     {
-        pieceTex[i].loadFromFile(imgPath[i], blank);
+        
+        if(pieceTex[i].loadFromFile(imgPath[i]))
+        {
+            pieceTex[i].setSmooth(true);
+        }
+        else
+        {
+            throw std::runtime_error("Failed to load texture file: " + imgPath[i]);
+        }
+
     }
     int index = 0;
     for (int i = 0; i < 8; ++i)
@@ -253,46 +283,49 @@ chessWin::chessWin(int width, int height, std::wstring name, const std::string i
         }
     }
     MapPieces();
-    win.create(sf::VideoMode(width, height), name);
+
+    win.create(sf::VideoMode(sf::Vector2u(width, height)), name );
 }
 
 void chessWin::handleResized() {
     sX = win.getSize().x;
     sY = win.getSize().y;
-    win.setView(sf::View(sf::FloatRect(0, 0, sX, sY)));
+    win.setView(sf::View(sf::FloatRect(sf::Vector2f(0,0), sf::Vector2f( sX, sY) )));
     if (sX > sY) {
-        Holder.width = sY;
-        Holder.height = sY;
-        Holder.left = sX / 2 - Holder.width / 2;
-        Holder.top = 0;
+        Holder.size.x = sY;
+        Holder.size.y = sY;
+        Holder.position.x = sX / 2 - Holder.size.x / 2;
+        Holder.position.y = 0;
     }
     else {
-        Holder.width = sX;
-        Holder.height = sX;
-        Holder.top = sY / 2 - Holder.height / 2;
-        Holder.left = 0;
+        Holder.size.x = sX;
+        Holder.size.y = sX;
+        Holder.position.y = sY / 2 - Holder.size.y / 2;
+        Holder.position.x = 0;
     }
     MapPieces();
     FitToHolder();
 }
 
-void chessWin::handleMouseButtonPressed(sf::Event& event) {
-    if (event.mouseButton.button == sf::Mouse::Button::Left) {
+void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
+    const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>();
+  
+    if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(win);
         if (state == GameState::StartScreen) {
-            if (button.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+            if (button.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::ChessBoard;
                 
                 MapPieces();
             }
         }
         else if (state == GameState::ChessBoard) {
-            int pX = event.mouseButton.x;
-            int pY = event.mouseButton.y;
-            int projX = ((pX - Holder.left) - ((pX - Holder.left) % (Holder.width / 8))) / (Holder.width / 8);
-            int projY = ((pY - Holder.top) - ((pY - Holder.top) % (Holder.height / 8))) / (Holder.height / 8);
+            int pX = mouseButtonPressed->position.x;
+            int pY = mouseButtonPressed->position.y;
+            int projX = ((pX - Holder.position.x) - ((pX - Holder.position.x) % (Holder.size.x / 8))) / (Holder.size.x / 8);
+            int projY = ((pY - Holder.position.y) - ((pY - Holder.position.y) % (Holder.size.y / 8))) / (Holder.size.y / 8);
             if (selectedFigures == 0) {
-                if (pX >= Holder.left && pX <= Holder.left + Holder.width && pY > Holder.top && pY < Holder.top + Holder.height) {
+                if (pX >= Holder.position.x && pX <= Holder.position.x + Holder.size.x && pY > Holder.position.y && pY < Holder.position.y + Holder.size.y) {
                     selected[0] = projX;
                     selected[1] = projY;
                     boardSquares[projX][projY].setFillColor(sf::Color(186, 202, 68));
@@ -344,10 +377,11 @@ void chessWin::handleMouseButtonPressed(sf::Event& event) {
             }
         }
     }
-    else if (event.mouseButton.button == sf::Mouse::Button::Right) {
+    else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
         boardSquares[selected[0]][selected[1]].setFillColor(fieldColors[((selected[0] + selected[1]) % 2)]);
         selectedFigures = 0;
     }
+
 }
 
 void chessWin::handleClosed() {
@@ -413,39 +447,44 @@ void chessWin::resetGame() {
 
 void chessWin::showEndWindow()
 {
-    sf::RenderWindow endWindow(sf::VideoMode(400, 200), load_string(ENDWINDOW));
+    sf::RenderWindow endWindow(sf::VideoMode(sf::Vector2u(400, 200)), load_string(ENDWINDOW));
   
     win.setActive(false);
 
     sf::RectangleShape button(sf::Vector2f(250, 50));
     button.setFillColor(sf::Color::Green);
-    button.setPosition(100, 75);
+    button.setPosition(sf::Vector2f(100, 75));
 
     sf::Font font;
-    if (!font.loadFromFile("arial.ttf")) 
+    if (!font.openFromFile("arial.ttf")) 
     {
-        return; 
+        throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
     }
 
-    sf::Text buttonText(load_string(FINISH), font, 24);
+    sf::Text buttonText(font,load_string(FINISH), 24);
     buttonText.setFillColor(sf::Color::White);
-    buttonText.setPosition(150, 85); 
+    buttonText.setPosition(sf::Vector2f(150, 85)); 
        
     while (endWindow.isOpen())
     {
-        sf::Event event;
-        while (endWindow.pollEvent(event))
+        //sf::Event event;
+        std::optional<sf::Event> event;
+       
+        while (auto eventOpt = endWindow.pollEvent())
         {
-            if (event.type == sf::Event::Closed)
+            //if (event.type == sf::Event::Closed)
+            if(event->is<sf::Event::Closed>())
             {
                 endWindow.close();
             }
-            else if (event.type == sf::Event::MouseButtonPressed)
+            //else if (event.type == sf::Event::Mouse ButtonPressed)
+            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
             {
-                if (event.mouseButton.button == sf::Mouse::Left)
+                //if (event.mouseButton.button == sf::Mouse::Left)
+                if(mouseButtonPressed->button == sf::Mouse::Button::Left)
                 {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(endWindow);
-                    if (button.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                    if (button.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y) )) {
                         
                         win.close();
 
@@ -458,7 +497,7 @@ void chessWin::showEndWindow()
 						{
 							cBoard.nextTurn();
 						}   
-                        win.create(sf::VideoMode(sX, sY), load_string(CHESS));
+                        win.create(sf::VideoMode(sf::Vector2u(sX, sY)), load_string(CHESS));
                   
                         FitToHolder();
                         MapPieces();
@@ -487,53 +526,62 @@ void chessWin::showEndWindow()
 
 void chessWin::drawVictoryWindow(Figure::Colors turn) 
 {
-    sf::RenderWindow Victorywindow(sf::VideoMode(400, 200), load_string(VICTORY));
+    sf::RenderWindow Victorywindow(sf::VideoMode(sf::Vector2u(400, 200)), load_string(VICTORY));
     sf::Font font;
-    if (!font.loadFromFile("arial.ttf")) {
-        return;
+    if (!font.openFromFile("arial.ttf")) {
+        throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
     }
-    sf::Text text;
-    text.setFont(font);
-    text.setCharacterSize(24);
+    sf::Text text(font, load_string((turn == Figure::white) ? WHITE_WINS : BLACK_WINS), 24);
     text.setFillColor(sf::Color::White);
     text.setStyle(sf::Text::Bold);
 
-    text.setString(load_string((turn == Figure::white) ? WHITE_WON : BLACK_WON));
+    //text.setString(load_string((turn == Figure::white) ? WHITE_WON : BLACK_WON));
     sf::FloatRect textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width / 2.0f,
-        textRect.top + textRect.height / 2.0f);
-    text.setPosition(sf::Vector2f(Victorywindow.getSize().x / 2.0f,
-        Victorywindow.getSize().y / 2.0f - 20.0f));
+    text.setOrigin(sf::Vector2f(
+        textRect.position.x + textRect.size.x / 2.0f,
+        textRect.position.y + textRect.size.y / 2.0f)
+    );
+
+    text.setPosition(
+        sf::Vector2f(Victorywindow.getSize().x / 2.0f,
+        Victorywindow.getSize().y / 2.0f - 20.0f)
+    );
 
     sf::RectangleShape button(sf::Vector2f(100, 50));
     button.setFillColor(sf::Color::Green);
     button.setOutlineColor(sf::Color::Black);
     button.setOutlineThickness(2);
-    button.setPosition(Victorywindow.getSize().x / 2.0f - 50, Victorywindow.getSize().y / 2.0f + 20);
+    button.setPosition(sf::Vector2f(Victorywindow.getSize().x / 2.0f - 50, Victorywindow.getSize().y / 2.0f + 20));
 
-    sf::Text buttonText;
-    buttonText.setFont(font);
-    buttonText.setCharacterSize(18);
+    sf::Text buttonText(font, load_string(OK), 18);
+    //buttonText.setFont(font);
+    //buttonText.setCharacterSize(18);
     buttonText.setFillColor(sf::Color::Black);
     buttonText.setStyle(sf::Text::Bold);
 
-    buttonText.setString(load_string(OK));
-    buttonText.setOrigin(buttonText.getLocalBounds().left + buttonText.getLocalBounds().width / 2.0f,
-    buttonText.getLocalBounds().top + buttonText.getLocalBounds().height / 2.0f);
-    buttonText.setPosition(button.getPosition().x + button.getSize().x / 2.0f,
-    button.getPosition().y + button.getSize().y / 2.0f);
+    //buttonText.setString(load_string(OK));
+    buttonText.setOrigin(sf::Vector2f(
+                        buttonText.getLocalBounds().position.x + buttonText.getLocalBounds().size.x / 2.0f,
+                        buttonText.getLocalBounds().position.x + buttonText.getLocalBounds().size.y / 2.0f));
+    
+    buttonText.setPosition(sf::Vector2f(
+                            button.getPosition().x + button.getSize().x / 2.0f,
+                            button.getPosition().y + button.getSize().y / 2.0f));
 
     while (Victorywindow.isOpen()) {
-        sf::Event event;
-        while (Victorywindow.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+        //sf::Event event;
+        std::optional<sf::Event> event;
+        while (auto eventOpt =  Victorywindow.pollEvent()) {
+            event = eventOpt;
+            if (event->is<sf::Event::Closed>())
                 Victorywindow.close();
-            else if (event.type == sf::Event::MouseButtonPressed)
+            //else if (event->is == sf::Event::MouseButtonPressed)
+            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
             {
-                if (event.mouseButton.button == sf::Mouse::Left)
+                if (mouseButtonPressed->button == sf::Mouse::Button::Left)
                 {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(Victorywindow);
-                    if (button.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                    if (button.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
 
                         win.close();
 
@@ -541,7 +589,7 @@ void chessWin::drawVictoryWindow(Figure::Colors turn)
                         resetGame();
 
                         state = GameState::StartScreen;
-                        win.create(sf::VideoMode(sX, sY), load_string(CHESS));
+                        win.create(sf::VideoMode(sf::Vector2u(sX, sY)), load_string(CHESS));
 
                         FitToHolder();
                         MapPieces();
@@ -565,29 +613,26 @@ void chessWin::drawVictoryWindow(Figure::Colors turn)
 }
 
 bool chessWin::Update() {
-    sf::Event event;
-    while (win.pollEvent(event)) {
+    std::optional<sf::Event> event;
+    while (auto eventPolly = win.pollEvent()) {
+        event = eventPolly;
 
-
-        switch (event.type) {
-        case sf::Event::Resized:
+        if (event->is<sf::Event::Resized>()) {
             handleResized();
-            break;
-
-        case sf::Event::MouseButtonPressed:
-            handleMouseButtonPressed(event);
-            break;
-
-        case sf::Event::Closed:
-            handleClosed();
-            return false;
-
-        case sf::Event::KeyPressed:
-            if (event.key.code == sf::Keyboard::Escape && state == GameState::ChessBoard)
-            {
-                showEndWindow();
-            }
         }
+        else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+            handleMouseButtonPressed(event);
+        }   
+
+        else if(event->is<sf::Event::Closed>()) {
+            handleClosed();
+        }
+
+        else if (auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->code == sf::Keyboard::Key::Escape && state == GameState::ChessBoard) {
+            showEndWindow();
+        }
+    }
     }
 
     win.clear();

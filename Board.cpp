@@ -43,6 +43,8 @@ void chessBoard::Pawn(const board& Board,std::vector<move>& moves, const Point& 
                 if (position.x < 7 && enPassantTarget == Point(position.x + 1, position.y + direction)) {
                 moves.push_back(move(Point(position.x, position.y), Point(position.x + 1, position.y + direction)));
                 }
+
+
             }
         }
     }
@@ -53,6 +55,9 @@ void chessBoard::King(const board& Board, std::vector<move>& moves, const Point&
         Point(-1, -1), Point(-1, 0), Point(-1, 1),
         Point(0, -1),                Point(0, 1),
         Point(1, -1), Point(1, 0), Point(1, 1)
+
+
+
     };
     for (const auto& dir : directions)
     {
@@ -76,6 +81,9 @@ void chessBoard::King(const board& Board, std::vector<move>& moves, const Point&
         {
             moves.push_back(move(position, Point(position.x - 2, position.y)));
         }
+
+
+        
     }
     else if (Board.arr[position.x][position.y].color == Figure::black && !bKing_moved)
     {

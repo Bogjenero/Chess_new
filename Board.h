@@ -38,6 +38,7 @@ struct Figure {
     };
     Figures figure;
     Colors color;   
+       
 };
 
 struct board

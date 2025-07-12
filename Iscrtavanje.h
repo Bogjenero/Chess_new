@@ -1,22 +1,48 @@
-﻿#include <SFML/Graphics.hpp>
+﻿#pragma once
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window/Event.hpp>
 #include "Board.h"
-#include <windows.h>
+//#include <windows.h>
 #include <array>
+
+
+
+extern sf::Texture emptyTexture; 
 
 struct chessPiece {
 	sf::Sprite Sprite; // prikazuje vizualni prikaz figure
 	Figure pieceID;
 	int x, y; // ID figure, x i y koordinate figure
 	bool draw = 0; // jel figuru treba crtati ili ne 
+	chessPiece() ;
 };
 
 enum class GameState { StartScreen, ChessBoard };
+
+
+enum  Strings {
+    START,
+    VICTORY,
+    WHITE_WINS,
+    BLACK_WINS,
+    DRAW,
+    OK,
+    CHESS,
+    FINISH,
+    ENDWINDOW,
+    WHITE_WON = WHITE_WINS, 
+    BLACK_WON = BLACK_WINS,
+};
 
 class chessWin {
 private:
@@ -34,6 +60,7 @@ private:
 	sf::Text buttonText; // tekst na gumbu
 	sf::Font font; // font za tekst
 	GameState state;
+	Strings stringID; // ID stringa
 
 	void FitToHolder(); // prilagođava veličinu i poziciju kvadrata na šahovskoj ploči prema veličini pravokutnika
 	void DrawSquares(); // crta kvadrate na šahovskoj ploči
@@ -42,17 +69,20 @@ private:
 	void MapPieces(); // ažurira pozicije svih figura na početku igre.
 	
 	void handleResized(); // Nova funkcija za rukovanje promjenom veličine prozora
-	void handleMouseButtonPressed(sf::Event& event); // Nova funkcija za rukovanje pritiskom tipke miša
+	void handleMouseButtonPressed(std::optional<sf::Event>& event); // Nova funkcija za rukovanje pritiskom tipke miša
 	void handleClosed(); // Nova funkcija za rukovanje zatvaranjem prozora
 	void showEndWindow();
 	void resetGame();
 	void drawVictoryWindow(Figure::Colors turn);
 	void RemovePieceAt(const Point& position);
+	static const  std::map<Strings, std::wstring> stringMap; 
+	
 public:
 	chessBoard cBoard; //šahovska ploča
 	bool Update();// rukuje događajima koji su izvedeni na prozoru
-	chessWin(int width, int height, std::wstring name, const std::string imgPath[12]);
+	chessWin( int width, int height, std::wstring name, const std::string imgPath[12]);
 	chessWin();
-	std::wstring load_string(UINT uID);
+	std::wstring load_string(Strings uID);
+	
 };
 
