@@ -14,6 +14,9 @@
 #include "Board.h"
 //#include <windows.h>
 #include <array>
+#include "imgui.h"
+#include "imgui-SFML.h"
+
 
 
 
@@ -40,15 +43,28 @@ enum  Strings {
     CHESS,
     FINISH,
     ENDWINDOW,
-    WHITE_WON = WHITE_WINS, 
-    BLACK_WON = BLACK_WINS,
+    //WHITE_WON = WHITE_WINS, 
+    //BLACK_WON = BLACK_WINS,
+	QUIT
 };
 
 class chessWin {
 private:
 	
 	sf::RenderWindow win; // prozor
-	sf::RectangleShape button; // button
+	sf::RectangleShape buttonStart; // button
+	sf::Text buttonTextStart; // tekst na gumbu
+	sf::RectangleShape buttonQuit;
+	sf::Text buttonTextQuit; // tekst na gumbu
+
+	sf::Texture boardTextture;
+	sf::Sprite boardSprite; // šahovska ploča
+	sf::Texture backgroundTexture; // pozadinska slika
+	sf::Sprite backgroundSprite; // pozadinska slika
+
+
+
+
 	sf::RectangleShape boardSquares[8][8]; //šahovska ploča
 	sf::IntRect Holder; // pravokutnik za šahovsku ploča
 	std::array<sf::Color,2> fieldColors = { sf::Color(118, 150, 86) ,sf::Color(255, 255, 255) }; // boje za polja // MORA BITI ARRY NE CEOVSKO POLJE
@@ -57,7 +73,7 @@ private:
 	std::array<int,2> selected; // odabrana figura
 	int selectedFigures = 0; // jel odabrana figura
 	int sX, sY; // x,y koordinate
-	sf::Text buttonText; // tekst na gumbu
+	
 	sf::Font font; // font za tekst
 	GameState state;
 	Strings stringID; // ID stringa

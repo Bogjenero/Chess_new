@@ -7,9 +7,9 @@
 #include <time.h>
 #include <iostream>
 #include <fstream>
-//#include <windows.h>
-//#include "resource.h"
 #include "Iscrtavanje.h"
+#include "imgui.h"
+#include "imgui-SFML.h"
 
 
 using namespace sf;
@@ -33,6 +33,7 @@ int main()
 
 	chessWin temp;
 	chessWin window(800, 800, temp.load_string(CHESS), defaultTheme);
+	
 
 	while (window.Update())
 	{
@@ -40,6 +41,7 @@ int main()
 	
 
 	}
+	//ImGui::SFML::Shutdown();
 	return 0;
 }
 

@@ -5,7 +5,7 @@
 			"type": "cppbuild",
 			"label": "C/C++: g++ build active file",
 			"command": "g++",
-			"args": [
+			/*"args": [
 				"-fdiagnostics-color=always",
 				"-g",
 				"Main.cpp",
@@ -15,10 +15,40 @@
 				"${fileDirname}/bin/Chess",
 				"-lsfml-graphics",
 				"-lsfml-window",
-				"-lsfml-system"
+				"-lsfml-system",
+			  	"imgui/*.cpp",
+        		"imgui-sfml/imgui-SFML.cpp",
+        		"-Iimgui",
+        		"-Iimgui/backends",
+        		"-Iimgui-sfml",
+			],*/
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"-Iimgui",
+				"-Iimgui/backends",
+				"-Iimgui-sfml",
+				"Main.cpp",
+				"Board.cpp",
+				"Iscrtavanje.cpp",
+				"imgui/imgui.cpp",
+				"imgui/imgui_draw.cpp",
+				"imgui/imgui_tables.cpp",
+				"imgui/imgui_widgets.cpp",
+				"imgui/imgui_demo.cpp",
+				"imgui/backends/imgui_impl_opengl3.cpp",
+				"imgui-sfml/imgui-SFML.cpp",
+				"-o",
+				"${fileDirname}/bin/Chess",
+				"-lsfml-graphics",
+				"-lsfml-window",
+				"-lsfml-system",
+				"-lGL",
+				"-ldl",
+				"-pthread"
 			],
 			"options": {
-				"cwd": "${fileDirname}"
+				 "cwd": "${workspaceFolder}"
 			},
 			"problemMatcher": [
 				"$gcc"
