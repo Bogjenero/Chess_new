@@ -40,7 +40,8 @@ chessPiece::chessPiece() : Sprite(emptyTexture) {}
 
 const std::string defaultTheme[12] = {
                                 "./images/Pieces/Default/wp.png",
-                            "./images/Pieces/Default/wr.png",
+                            //"./images/Pieces/Default/wr.png",
+                            ".images/Rook.xcf",
                             "./images/Pieces/Default/wn.png",
                             "./images/Pieces/Default/wb.png",
                             "./images/Pieces/Default/wk.png",
@@ -338,7 +339,7 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
         }
     }
     MapPieces();
-
+    
     win.create(sf::VideoMode(sf::Vector2u(width, height)), name );
     
 }
@@ -687,7 +688,7 @@ bool chessWin::Update() {
         }
         
         if (event->is<sf::Event::Resized>()) {
-            handleResized();
+            //handleResized();
         }
         else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
 

@@ -17,12 +17,21 @@ int main()
 {
 
 	const std::string defaultTheme[12] = { 
-									"./images/Pieces/Default/wp.png",
-								"./images/Pieces/Default/wr.png",
-								"./images/Pieces/Default/wn.png",
-								"./images/Pieces/Default/wb.png",
-								"./images/Pieces/Default/wk.png",
-								"./images/Pieces/Default/wq.png",
+									//"./images/Pieces/Default/wp.png",
+								//"./images/Pieces/Default/wr.png",
+								
+								//"./images/Pieces/Default/wn.png",
+								"./images/Pawn.png",
+								"./images/Rook.png",
+								"./images/Knight.png",
+								"./images/Bishop.png",
+								"./images/King.png",
+								"./images/Queen.png",
+								
+
+								//"./images/Pieces/Default/wb.png",
+								//"./images/Pieces/Default/wk.png",
+								//"./images/Pieces/Default/wq.png",
 								"./images/Pieces/Default/bp.png",
 								"./images/Pieces/Default/br.png",
 								"./images/Pieces/Default/bn.png",
