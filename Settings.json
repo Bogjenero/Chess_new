@@ -53,6 +53,8 @@
     "purple": "./images/Boards/purple.png",
     "classic": "./images/Boards/board.png",
     "black": "./images/Boards/black_white_board.png"
-  }
+  },
+  "start_background": "./images/Chess_start_background.jpg",
+  "settings_background": "./images/Chess_settings_background.png"
 
 }   

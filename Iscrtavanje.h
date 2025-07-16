@@ -30,7 +30,7 @@ struct chessPiece {
 	chessPiece() ;
 };
 
-enum class GameState { StartScreen, ChessBoard };
+enum class GameState { StartScreen, ChessBoard, Settings };
 
 
 enum  Strings {
@@ -43,6 +43,7 @@ enum  Strings {
     CHESS,
     FINISH,
     ENDWINDOW,
+	SETTINGS,
     //WHITE_WON = WHITE_WINS, 
     //BLACK_WON = BLACK_WINS,
 	QUIT
@@ -52,15 +53,25 @@ class chessWin {
 private:
 	
 	sf::RenderWindow win; // prozor
+	
 	sf::RectangleShape buttonStart; // button
-	sf::Text buttonTextStart; // tekst na gumbu
+	sf::Text buttonTextStart;
+	 
 	sf::RectangleShape buttonQuit;
 	sf::Text buttonTextQuit; // tekst na gumbu
 
+	sf::RectangleShape buttonSettings;
+	sf::Text buttonTextSettings; // tekst na gumbu 
+
 	sf::Texture boardTextture;
-	sf::Sprite boardSprite; // šahovska ploča
-	sf::Texture backgroundTexture; // pozadinska slika
-	sf::Sprite backgroundSprite; // pozadinska slika
+	sf::Sprite boardSprite; 
+	
+	sf::Texture backgroundTextureStart;
+	sf::Sprite backgroundSpriteStart; 
+
+	sf::Texture backgroundTextureSettings;
+	sf::Sprite backgroundSpriteSettings;
+
 
 
 
@@ -99,6 +110,7 @@ public:
 	chessWin( int width, int height, std::wstring name, const std::string imgPath[12]);
 	chessWin();
 	std::wstring load_string(Strings uID);
-	
+	//dodati windza settings recimo settingsWin (kao što imam chessWin) gdje će biti stvari za podesiti i onda inicijalizirati u mainu
+	//unutar settingsWin će biti sve potrebne funkcije i varijable za podešavanje igre
 };
 

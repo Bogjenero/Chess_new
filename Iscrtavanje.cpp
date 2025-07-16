@@ -20,7 +20,8 @@ const std::map <Strings, std::wstring> chessWin::stringMap = {
     { CHESS, L"Chess Game" },
     { FINISH, L"Finish the game" },
     { ENDWINDOW, L"End window" },
-    { QUIT, L"Quit Game"}
+    { QUIT, L"Quit Game"},
+    { SETTINGS, L"Settings" }
 };
 
 
@@ -35,13 +36,14 @@ std::wstring chessWin::load_string(Strings uID) {
 
 }
 
-chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTextQuit(font,load_string(QUIT),30)  ,boardSprite(boardTextture), backgroundSprite(backgroundTexture) {}
+chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTextQuit(font,load_string(QUIT),30),buttonTextSettings(font,load_string(SETTINGS),30), 
+boardSprite(boardTextture), backgroundSpriteStart(backgroundTextureStart), backgroundSpriteSettings(backgroundTextureSettings) {}
 sf::Texture emptyTexture; 
 
 chessPiece::chessPiece() : Sprite(emptyTexture) {}
 
 
-const std::string defaultTheme[12] = {
+/*const std::string defaultTheme[12] = {
                                 "./images/Pieces/Default/wp.png",
                             //"./images/Pieces/Default/wr.png",
                             ".images/Rook.xcf",
@@ -54,7 +56,7 @@ const std::string defaultTheme[12] = {
                             "./images/Pieces/Default/bn.png",
                             "./images/Pieces/Default/bb.png",
                             "./images/Pieces/Default/bk.png",
-                            "./images/Pieces/Default/bq.png" };
+                            "./images/Pieces/Default/bq.png" };*/
 
 
 void chessWin::FitToHolder()
@@ -222,7 +224,8 @@ int setTexture(Figure currFigure)
 }
 
 
-chessWin::chessWin(int width,  int height, std::wstring name, const std::string imgPath[12]): buttonTextStart(font, load_string(START), 30), buttonTextQuit(font,load_string(QUIT),30) ,boardSprite(boardTextture), backgroundSprite(backgroundTexture)
+chessWin::chessWin(int width,  int height, std::wstring name, const std::string imgPath[12]): buttonTextStart(font, load_string(START), 30), buttonTextQuit(font,load_string(QUIT),30), buttonTextSettings(font,load_string(SETTINGS),30),
+ boardSprite(boardTextture), backgroundSpriteStart(backgroundTextureStart), backgroundSpriteSettings(backgroundTextureSettings)
 {
     std::ifstream file("Settings.json");
     if (!file.is_open()) {
@@ -240,16 +243,25 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
     //sY = height;
     Holder.position.x = 0;
     Holder.position.y = 0;
-    Holder.size.x = width;
-    Holder.size.y = height;
+    //Holder.size.x = width;
+    //Holder.size.y = height;
+
+    Holder.size.x = settings["window"]["width"].get<int>();
+    Holder.size.y = settings["window"]["height"].get<int>();
       
     buttonStart.setSize(sf::Vector2f(200, 60));
     buttonStart.setPosition(sf::Vector2f((800 - 200) / 2.f, 100));
     buttonStart.setFillColor(sf::Color::Blue);
     buttonStart.setOutlineThickness(2); 
     
+    buttonSettings.setSize(sf::Vector2f(200, 60));
+    buttonSettings.setPosition(sf::Vector2f((800 - 200) / 2.f, 200));
+    buttonSettings.setFillColor(sf::Color::Green);
+    buttonSettings.setOutlineThickness(2);
+
+
     buttonQuit.setSize(sf::Vector2f(200, 60));
-    buttonQuit.setPosition(sf::Vector2f((800 - 200) / 2.f, 200));
+    buttonQuit.setPosition(sf::Vector2f((800 - 200) / 2.f, 300));
     buttonQuit.setFillColor(sf::Color::Red);
     buttonQuit.setOutlineThickness(2);
 
@@ -266,11 +278,19 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
     
     textBounds = buttonTextQuit.getLocalBounds();
     buttonTextQuit.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
+
     buttonPos = buttonQuit.getPosition();
     buttonSize = buttonQuit.getSize();
     buttonTextQuit.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
     buttonTextQuit.setFillColor(sf::Color::White);
 
+    textBounds = buttonTextSettings.getLocalBounds();
+    buttonTextSettings.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
+
+    buttonPos = buttonSettings.getPosition();
+    buttonSize = buttonSettings.getSize();
+    buttonTextSettings.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextSettings.setFillColor(sf::Color::White);
     
     if(!boardTextture.loadFromFile(settings["boards"]["purple"].get<std::string>()))
     {
@@ -286,22 +306,35 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
     sY / boardSprite.getLocalBounds().size.y));
 
 
-    if(!backgroundTexture.loadFromFile("./images/Chess_background.jpg"))
+    if(!backgroundTextureStart.loadFromFile(settings["start_background"].get<std::string>()))
     {
         throw std::runtime_error("Failed to load texture file: " + std::string("./images/background.png"));
     }
 
-    backgroundTexture.setSmooth(true);
-    backgroundSprite.setTexture(backgroundTexture, true);
-    
 
-    sf::Vector2u textureSize = backgroundTexture.getSize();
-    sf::Vector2u windowSize  = win.getSize();              
+    backgroundTextureStart.setSmooth(true);
+    backgroundSpriteStart.setTexture(backgroundTextureStart, true);
+    
+    if(!backgroundTextureSettings.loadFromFile(settings["settings_background"].get<std::string>()))
+    {
+        throw std::runtime_error("Failed to load texture file: " + std::string("./images/settings_background.png"));
+    }
+
+    backgroundTextureSettings.setSmooth(true);
+    backgroundSpriteSettings.setTexture(backgroundTextureSettings, true);
+
+    sf::Vector2u textureSize = backgroundTextureStart.getSize();
+    //sf::Vector2u windowSize  = win.getSize();              
 
     float scaleX = static_cast<float>(800) / textureSize.x;
     float scaleY = static_cast<float>(800) / textureSize.y;
+    backgroundSpriteStart.setScale(sf::Vector2f(scaleX, scaleY));
 
-    backgroundSprite.setScale(sf::Vector2f(scaleX, scaleY));
+    sf::Vector2u textureSizeSettings = backgroundTextureSettings.getSize();
+    float scaleXSettings = static_cast<float>(800) / textureSizeSettings.x;
+    float scaleYSettings = static_cast<float>(800) / textureSizeSettings.y;
+    backgroundSpriteSettings.setScale(sf::Vector2f(scaleXSettings, scaleYSettings));
+
     
     /*for (int i = 0; i < 8; ++i)
     {
@@ -391,6 +424,9 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                 state = GameState::ChessBoard;
                 
                 MapPieces();
+            }
+            else if (buttonSettings.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+                state = GameState::Settings;
             }
             else if (buttonQuit.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
                 win.close();
@@ -694,7 +730,7 @@ bool chessWin::Update() {
         
         sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(win));
         
-        if(state == GameState::StartScreen && (buttonStart.getGlobalBounds().contains(mousePos) || buttonQuit.getGlobalBounds().contains(mousePos))) 
+        if(state == GameState::StartScreen && (buttonStart.getGlobalBounds().contains(mousePos) || buttonQuit.getGlobalBounds().contains(mousePos)  || buttonSettings.getGlobalBounds().contains(mousePos)))
         {
             
             win.setMouseCursor(handCursor);
@@ -725,9 +761,11 @@ bool chessWin::Update() {
 
     win.clear();
     if (state == GameState::StartScreen) {
-        win.draw(backgroundSprite);
+        win.draw(backgroundSpriteStart);
         win.draw(buttonStart);
         win.draw(buttonTextStart);
+        win.draw(buttonSettings);
+        win.draw(buttonTextSettings);
         win.draw(buttonQuit);
         win.draw(buttonTextQuit);
 
@@ -736,6 +774,9 @@ bool chessWin::Update() {
         win.draw(boardSprite);
         //DrawSquares();
         DrawPieces();
+    }
+    else if (state == GameState::Settings) {
+        win.draw(backgroundSpriteSettings);
     }
 
     win.display();
