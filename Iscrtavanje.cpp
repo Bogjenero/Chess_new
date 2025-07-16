@@ -2,9 +2,12 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include "Board.h"
-#include "imgui.h"
-#include "imgui-SFML.h"
+//#include "imgui.h"
+//#include "imgui-SFML.h"
+#include <nlohmann/json.hpp> 
+#include <fstream>
 
+using json = nlohmann::json;
 
 const std::map <Strings, std::wstring> chessWin::stringMap = {
 
@@ -221,16 +224,25 @@ int setTexture(Figure currFigure)
 
 chessWin::chessWin(int width,  int height, std::wstring name, const std::string imgPath[12]): buttonTextStart(font, load_string(START), 30), buttonTextQuit(font,load_string(QUIT),30) ,boardSprite(boardTextture), backgroundSprite(backgroundTexture)
 {
+    std::ifstream file("Settings.json");
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open settings file: Settings.json");
+    } 
+    nlohmann::json settings;
+    file >> settings;
 
+    sX = settings["window"]["width"].get<int>();
+    sY = settings["window"]["height"].get<int>();
+    
+    
     state = GameState::StartScreen;
-    sX = width;
-    sY = height;
+    //sX = width;
+    //sY = height;
     Holder.position.x = 0;
     Holder.position.y = 0;
     Holder.size.x = width;
     Holder.size.y = height;
-
-    
+      
     buttonStart.setSize(sf::Vector2f(200, 60));
     buttonStart.setPosition(sf::Vector2f((800 - 200) / 2.f, 100));
     buttonStart.setFillColor(sf::Color::Blue);
@@ -259,8 +271,8 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
     buttonTextQuit.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
     buttonTextQuit.setFillColor(sf::Color::White);
 
-
-    if(!boardTextture.loadFromFile("./images/board0.png"))
+    
+    if(!boardTextture.loadFromFile(settings["boards"]["purple"].get<std::string>()))
     {
         throw std::runtime_error("Failed to load texture file: " + std::string("./images/board0.png"));
     }    
@@ -302,13 +314,18 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
     }
     
     FitToHolder();*/
-        
-    
+    std::array  figures = {"pawn", "rook", "knight", "bishop", "king", "queen" };
+    for (int i = 0 ; i < 12; ++i)
+    {
+        pieceTex[i].loadFromFile(settings["figures"]["modern"][(i < 6) ? "white" : "black"][figures[i % 6]].get<std::string>());
+        pieceTex[i].setSmooth(true);
+    }
+    /*std::string filePath = settings["figures"]["modern"]["white"]["pawn"].get<std::string>();
     sf::IntRect blank;
     for (int i = 0; i < 12; ++i)
     {
         
-        if(pieceTex[i].loadFromFile(imgPath[i]))
+        if(pieceTex[i].loadFromFile(settings["figures"]["modern"].get<std::string>()))
         {
             pieceTex[i].setSmooth(true);
         }
@@ -317,7 +334,7 @@ chessWin::chessWin(int width,  int height, std::wstring name, const std::string 
             throw std::runtime_error("Failed to load texture file: " + imgPath[i]);
         }
 
-    }
+    }*/
     int index = 0;
     for (int i = 0; i < 8; ++i)
     {

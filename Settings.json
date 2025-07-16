@@ -1,0 +1,58 @@
+{
+  "app_name": "Chess",
+  "user_values": {
+    "language": "en",
+    "theme": "light",
+    "figuresTye" : "modern"
+    
+  },
+  "window": {
+    "width": 800,
+    "height": 800
+  },
+  "fullscreen": false,
+  "figures":{
+    "modern": {
+        "white": {
+          "pawn": "./images/Pieces/Modern/PawnW.png",
+          "rook": "./images/Pieces/Modern/RookW.png",
+          "knight": "./images/Pieces/Modern/KnightW.png",
+          "bishop": "./images/Pieces/Modern/BishopW.png",
+          "queen": "./images/Pieces/Modern/QueenW.png",
+          "king": "./images/Pieces/Modern/KingW.png"
+        },
+        "black": {
+          "pawn": "./images/Pieces/Modern/Pawn.png",
+          "rook": "./images/Pieces/Modern/Rook.png",
+          "knight": "./images/Pieces/Modern/Knight.png",      
+          "bishop": "./images/Pieces/Modern/Bishop.png",
+          "queen": "./images/Pieces/Modern/Queen.png",
+          "king": "./images/Pieces/Modern/King.png"
+        }
+    },
+    "classic": {
+         "white": {
+          "pawn": "./images/Pieces/Default/wp.png",
+          "rook": "./images/Pieces/Default/wr.png",
+          "knight": "./images/Pieces/Default/wn.png",
+          "bishop": "./images/Pieces/Default/wb.png",
+          "queen": "./images/Pieces/Default/wq.png",
+          "king": "./images/Pieces/Default/wk.png"
+        },
+        "black": {
+          "pawn": "./images/Pieces/Default/bp.png",
+          "rook": "./images/Pieces/Deafult/br.png",
+          "knight": "./images/Pieces/Deafult/bn.png",      
+          "bishop": "./images/Pieces/Deafult/bb.png",
+          "queen": "./images/Pieces/Deafult/bq.png",
+          "king": "./images/Pieces/Deafult/bk.png"
+        }
+    }
+  },
+  "boards":{
+    "purple": "./images/Boards/purple.png",
+    "classic": "./images/Boards/board.png",
+    "black": "./images/Boards/black_white_board.png"
+  }
+
+}   
