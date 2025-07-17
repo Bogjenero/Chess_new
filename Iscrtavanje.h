@@ -19,7 +19,6 @@
 
 
 
-
 extern sf::Texture emptyTexture; 
 
 struct chessPiece {
@@ -44,36 +43,65 @@ enum  Strings {
     FINISH,
     ENDWINDOW,
 	SETTINGS,
-    //WHITE_WON = WHITE_WINS, 
-    //BLACK_WON = BLACK_WINS,
-	QUIT
+	QUIT,
+	BACK,
+	RESET
 };
+std::wstring  load_string(Strings uID);
+
+
+
+class settingsWin {
+private:
+	
+	sf::RectangleShape buttonBack; 
+	sf::Text buttonTextBack;
+
+	sf::Font font; 
+
+	sf::RectangleShape buttonReset; 
+	sf::Text buttonTextReset;
+
+	sf::Texture backgroundTexture;
+	sf::Sprite backgroundSprite; 
+	
+public:
+	settingsWin();
+	sf::RectangleShape getButtonBack() { return buttonBack; } 
+	sf::Text getButtonTextBack() { return buttonTextBack; } 
+	sf::RectangleShape getButtonReset() { return buttonReset; }
+	sf::Text getButtonTextReset() { return buttonTextReset; } 
+	sf::Sprite getBackgroundSprite() { return backgroundSprite; }
+	
+
+};
+
+
 
 class chessWin {
 private:
-	
+	settingsWin settingsWindow;
+
+
 	sf::RenderWindow win; // prozor
 	
 	sf::RectangleShape buttonStart; // button
 	sf::Text buttonTextStart;
 	 
 	sf::RectangleShape buttonQuit;
-	sf::Text buttonTextQuit; // tekst na gumbu
+	sf::Text buttonTextQuit; 
 
 	sf::RectangleShape buttonSettings;
-	sf::Text buttonTextSettings; // tekst na gumbu 
+	sf::Text buttonTextSettings; 
 
 	sf::Texture boardTextture;
 	sf::Sprite boardSprite; 
 	
-	sf::Texture backgroundTextureStart;
-	sf::Sprite backgroundSpriteStart; 
+	sf::Texture backgroundTexture;
+	sf::Sprite backgroundSprite; 
 
-	sf::Texture backgroundTextureSettings;
-	sf::Sprite backgroundSpriteSettings;
-
-
-
+	//sf::Texture backgroundTextureSettings;
+	//sf::Sprite backgroundSpriteSettings;
 
 
 	sf::RectangleShape boardSquares[8][8]; //šahovska ploča
@@ -102,15 +130,15 @@ private:
 	void resetGame();
 	void drawVictoryWindow(Figure::Colors turn);
 	void RemovePieceAt(const Point& position);
-	static const  std::map<Strings, std::wstring> stringMap; 
+	//static const  std::map<Strings, std::wstring> stringMap; 
 	
 public:
 	chessBoard cBoard; //šahovska ploča
 	bool Update();// rukuje događajima koji su izvedeni na prozoru
-	chessWin( int width, int height, std::wstring name, const std::string imgPath[12]);
+	chessWin( int width, int height, std::wstring name, const std::string imgPath[12]); 
 	chessWin();
-	std::wstring load_string(Strings uID);
-	//dodati windza settings recimo settingsWin (kao što imam chessWin) gdje će biti stvari za podesiti i onda inicijalizirati u mainu
-	//unutar settingsWin će biti sve potrebne funkcije i varijable za podešavanje igre
+	
+	
+	
 };
 

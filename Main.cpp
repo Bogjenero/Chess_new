@@ -52,7 +52,7 @@ int main()
 
 
 	chessWin temp;
-	chessWin window(800, 800, temp.load_string(CHESS), defaultTheme);
+	chessWin window(800, 800, load_string(CHESS), defaultTheme);
 	
 
 	while (window.Update())
