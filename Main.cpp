@@ -53,7 +53,7 @@ int main()
 
 	chessWin temp;
 	chessWin window(800, 800, load_string(CHESS), defaultTheme);
-	
+	StockFish stockfish;
 
 	while (window.Update())
 	{

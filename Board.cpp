@@ -4,13 +4,13 @@
 #include <algorithm>
 #include <array>
 
-void chessBoard::Pawn(const board& Board,std::vector<move>& moves, const Point& position)
+void chessBoard::Pawn(const board& Board,std::vector<move>& moves, const Point& position, Figure::Colors color)
 {
-    if (Board.arr[position.x][position.y].figure == Figure::Pawn && Board.arr[position.x][position.y].color == turn)
+    if (Board.arr[position.x][position.y].figure == Figure::Pawn && Board.arr[position.x][position.y].color == color)
     {
-        int direction = (turn == Figure::white) ? -1 : 1; 
-        int startRow = (turn == Figure::white) ? 6 : 1;   
-        int opponentColor = (turn == Figure::white) ? Figure::black : Figure::white;
+        int direction = (color == Figure::white) ? -1 : 1;
+        int startRow = (color == Figure::white) ? 6 : 1;
+        int opponentColor = (color == Figure::white) ? Figure::black : Figure::white;
 
         if (position.y + direction >= 0 && position.y + direction < 8 && Board.arr[position.x][position.y + direction].figure == Figure::Empty)
         {
@@ -243,7 +243,55 @@ void chessBoard::Queen(const board& Board, std::vector<move>& moves, const Point
     }
 }
 
+/*std::vector<move> chessBoard::getLegalMoves(const board& b, Figure::Colors color)
+{
+    std::vector<move> allMoves;
+    std::vector<move> legalMoves;
 
+    // Generiraj sve moguće poteze bez razmišljanja o šahu
+    for (int i = 0; i < 8; ++i)
+    {
+        for (int j = 0; j < 8; ++j)
+        {
+            if (b.arr[i][j].color != color || b.arr[i][j].figure == Figure::Empty)
+                continue;
+
+            Point pos(i, j);
+            std::vector<move> pieceMoves;
+
+            switch (b.arr[i][j].figure)
+            {
+                case Figure::Pawn:   Pawn(b, pieceMoves, pos); break;
+                case Figure::Knight: Knight(b, pieceMoves, pos); break;
+                case Figure::Bishop: Bishop(b, pieceMoves, pos); break;
+                case Figure::Rook:   Rook(b, pieceMoves, pos); break;
+                case Figure::Queen:  Queen(b, pieceMoves, pos); break;
+                case Figure::King:   King(b, pieceMoves, pos); break;
+                default: break;
+            }
+
+            allMoves.insert(allMoves.end(), pieceMoves.begin(), pieceMoves.end());
+        }
+    }
+
+    // Sada filtriraj sve poteze koji ostavljaju kralja u šahu
+    for (const auto& m : allMoves)
+    {
+        board temp = b;
+
+        // Napravi potez na kopiji
+        temp.arr[m.to.x][m.to.y] = temp.arr[m.from.x][m.from.y];
+        temp.arr[m.from.x][m.from.y] = { Figure::Empty, Figure::none };
+
+        // Provjeri je li kralj siguran nakon poteza
+        if (!isKingInCheck(temp, color))
+        {
+            legalMoves.push_back(m);
+        }
+    }
+
+    return legalMoves;
+}*/
 
 std::vector<move> chessBoard::getLegalMoves(const board& b, Figure::Colors color)
 {
@@ -255,7 +303,7 @@ std::vector<move> chessBoard::getLegalMoves(const board& b, Figure::Colors color
         {
                 if (b.arr[i][j].figure == Figure::Pawn && b.arr[i][j].color == color)
                 {
-                    Pawn(b,moves, Point(i, j));
+                    Pawn(b,moves, Point(i, j), color);
                 }
                 else if (b.arr[i][j].figure == Figure::King && b.arr[i][j].color == color)
                 {
@@ -297,12 +345,8 @@ bool chessBoard::isKingInCheck(const board& b,Figure::Colors color)
             }
         }
     }
-    std::vector<move> opponentMoves;
-    opponentMoves = getLegalMoves(b, (color == Figure::white) ? Figure::black : Figure::white);
-
-    return std::any_of(opponentMoves.begin(), opponentMoves.end(), [&](const move& m) {
-        return m.to == kingPos;
-        });
+    std::vector<move> opponentMoves = getLegalMoves(b,(color == Figure::white) ? Figure::black : Figure::white);
+    return std::any_of(opponentMoves.begin(), opponentMoves.end(), [&](const move& m) { return m.to == kingPos; });
 }
 
 bool chessBoard::isCheckmate(const board& b, Figure::Colors color) {
@@ -333,7 +377,7 @@ bool chessBoard::isSquareUnderAttack(const Point& p) {
         });
 }
 
-bool chessBoard::playMove(move req, std::array<int,4>& replace,bool& end,bool& rotation,Point& enPassantPawn,bool& Passant)
+/*bool chessBoard::playMove(move req, std::array<int,4>& replace,bool& end,bool& rotation,Point& enPassantPawn,bool& Passant)
 {   
     std::vector<move> moves = getLegalMoves(chessBoard, turn);
     move temp;
@@ -483,7 +527,107 @@ bool chessBoard::playMove(move req, std::array<int,4>& replace,bool& end,bool& r
         }
     }
     return false;
+}*/
+bool chessBoard::playMove(move req, std::array<int,4>& replace, bool& end, bool& rotation, Point& enPassantPawn, bool& Passant)
+{
+    std::vector<move> legalMoves = getLegalMoves(chessBoard, turn);
+
+    bool isLegal = false;
+    for (const auto& m : legalMoves) {
+        if (m == req) {
+            isLegal = true;
+            break;
+        }
+    }
+
+    if (!isLegal) return false;
+
+    
+    board tempBoard = chessBoard;
+    
+    bool isPawnDoubleMove = (tempBoard.arr[req.from.x][req.from.y].figure == Figure::Pawn &&
+                              std::abs(req.to.y - req.from.y) == 2);
+
+    
+    bool isCastling = false;
+    int rookFromX = -1, rookToX = -1;
+    if (tempBoard.arr[req.from.x][req.from.y].figure == Figure::King &&
+        std::abs(req.to.x - req.from.x) == 2) {
+        isCastling = true;
+        if (req.to.x > req.from.x) {
+            rookFromX = 7;
+            rookToX = 5;
+        } else {
+            rookFromX = 0;
+            rookToX = 3;
+        }
+    }
+
+    
+    Passant = false;
+    if (tempBoard.arr[req.from.x][req.from.y].figure == Figure::Pawn && req.to == enPassantTarget) {
+        int direction = (turn == Figure::white) ? 1 : -1;
+        tempBoard.arr[req.to.x][req.to.y] = tempBoard.arr[req.from.x][req.from.y];
+        tempBoard.arr[req.from.x][req.from.y] = { Figure::Empty, Figure::none };
+        tempBoard.arr[req.to.x][req.to.y + direction] = { Figure::Empty, Figure::none };
+        enPassantPawn = Point(req.to.x, req.to.y + direction);
+        Passant = true;
+    } else {
+    
+        tempBoard.arr[req.to.x][req.to.y] = tempBoard.arr[req.from.x][req.from.y];
+        tempBoard.arr[req.from.x][req.from.y] = { Figure::Empty, Figure::none };
+
+        if (isCastling) {
+            tempBoard.arr[rookToX][req.from.y] = tempBoard.arr[rookFromX][req.from.y];
+            tempBoard.arr[rookFromX][req.from.y] = { Figure::Empty, Figure::none };
+            replace = { rookFromX, req.from.y, rookToX, req.from.y };
+            rotation = true;
+        }
+    }
+
+    
+    if (isKingInCheck(tempBoard, turn)) {
+        std::cout << "Move puts king in check, reverting." << std::endl;
+        return false;
+    }
+
+    
+    chessBoard = tempBoard;
+
+    
+    if (isPawnDoubleMove) {
+        enPassantPossible = true;
+        enPassantTarget = Point(req.from.x, req.from.y + ((turn == Figure::white) ? -1 : 1));
+    } else {
+        enPassantPossible = false;
+    }
+
+    
+    Figure::Colors opponent = (turn == Figure::white) ? Figure::black : Figure::white;
+    if (isCheckmate(chessBoard, opponent)) {
+        end = true;
+    }
+
+    
+    if (chessBoard.arr[req.to.x][req.to.y].figure == Figure::King) {
+        if (turn == Figure::white) wKing_moved = true;
+        else bKing_moved = true;
+    } else if (chessBoard.arr[req.to.x][req.to.y].figure == Figure::Rook) {
+        if (turn == Figure::white) {
+            if (req.from.x == 0 && req.from.y == 7) wRook1_moved = true;
+            else if (req.from.x == 7 && req.from.y == 7) wRook2_moved = true;
+        } else {
+            if (req.from.x == 0 && req.from.y == 0) bRook1_moved = true;
+            else if (req.from.x == 7 && req.from.y == 0) bRook2_moved = true;
+        }
+    }
+
+    
+    history.push_back(chessBoard);
+
+    return true;
 }
+
 void chessBoard::nextTurn()
 {
     if(turn == Figure::white)
@@ -497,4 +641,98 @@ void chessBoard::nextTurn()
     if (!enPassantPossible) {
         enPassantTarget = Point(-1, -1);
     }
+}
+// Add this method to your chessBoard class
+std::string chessBoard::boardToFEN() const {
+    std::string fen = "";
+    
+    // 1. Piece placement (from rank 8 to rank 1, file a to h)
+    for (int rank = 0; rank < 8; ++rank) {
+        int emptyCount = 0;
+        
+        for (int file = 0; file < 8; ++file) {
+            Figure piece = chessBoard.arr[file][rank];
+            
+            if (piece.figure == Figure::Empty) {
+                emptyCount++;
+            } else {
+                // Add empty squares count if any
+                if (emptyCount > 0) {
+                    fen += std::to_string(emptyCount);
+                    emptyCount = 0;
+                }
+                
+                // Add piece character
+                char pieceChar = getPieceChar(piece);
+                fen += pieceChar;
+            }
+        }
+        
+        // Add remaining empty squares at end of rank
+        if (emptyCount > 0) {
+            fen += std::to_string(emptyCount);
+        }
+        
+        // Add rank separator (except for last rank)
+        if (rank < 7) {
+            fen += "/";
+        }
+    }
+    
+    // 2. Active color
+    fen += " ";
+    fen += (turn == Figure::white) ? "w" : "b";
+    
+    // 3. Castling availability
+    fen += " ";
+    std::string castling = "";
+    if (!wKing_moved && !wRook2_moved) castling += "K";  // White kingside
+    if (!wKing_moved && !wRook1_moved) castling += "Q";  // White queenside
+    if (!bKing_moved && !bRook2_moved) castling += "k";  // Black kingside
+    if (!bKing_moved && !bRook1_moved) castling += "q";  // Black queenside
+    
+    if (castling.empty()) {
+        fen += "-";
+    } else {
+        fen += castling;
+    }
+    
+    // 4. En passant target square
+    fen += " ";
+    if (enPassantPossible) {
+        // Convert Point to algebraic notation (e.g., Point(4,2) -> "e3")
+        char file = 'a' + enPassantTarget.x;
+        char rank = '1' + (7 - enPassantTarget.y);  // Flip rank for FEN
+        fen += file;
+        fen += rank;
+    } else {
+        fen += "-";
+    }
+    
+    // 5. Halfmove clock (moves since last capture or pawn move)
+    // You might need to track this separately
+    fen += " 0";
+    
+    // 6. Fullmove number (increments after Black's move)
+    // You might need to track this separately
+    fen += " 1";
+    
+    return fen;
+}
+
+// Helper method to convert piece to FEN character
+char chessBoard::getPieceChar(const Figure& piece) const {
+    char baseChar;
+    
+    switch (piece.figure) {
+        case Figure::Pawn:   baseChar = 'p'; break;
+        case Figure::Rook:   baseChar = 'r'; break;
+        case Figure::Knight: baseChar = 'n'; break;
+        case Figure::Bishop: baseChar = 'b'; break;
+        case Figure::Queen:  baseChar = 'q'; break;
+        case Figure::King:   baseChar = 'k'; break;
+        default:             return ' ';  // Should not happen
+    }
+    
+ return (piece.color == Figure::white) ? std::toupper(baseChar) : baseChar;
 }

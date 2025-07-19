@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <vector>
+#include <string>
 
 
 struct Point {
@@ -58,7 +59,7 @@ struct board
 class chessBoard {
 private: 
     std::vector<board> history;
-    void Pawn(const board& Board, std::vector<move>& moves, const Point& position); // potezi za bijelog pijuna
+    void Pawn(const board& Board, std::vector<move>& moves, const Point& position, Figure::Colors color); // potezi za bijelog pijuna
     void King(const board& Board, std::vector<move>& moves, const Point& position); // potezi za kralja
     void Rook(const board& Board, std::vector<move>& moves, const Point& position); // potezi za topa
     void Queen(const board& Board, std::vector<move>& moves, const Point& position); // potezi za topa
@@ -77,4 +78,7 @@ public:
     board chessBoard;
     bool playMove(move req,std::array<int,4>& replace,bool& end,bool& rotation,Point& enPassantPawn,bool& Passant); // izvršava potez
     void nextTurn(); // prebacuje na sljedeći potez
+    std::string boardToFEN() const;
+    char getPieceChar(const Figure& figure) const; // vraća karakter koji predstavlja figuru u FEN formatu
 };    
+
