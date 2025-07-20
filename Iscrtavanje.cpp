@@ -9,9 +9,23 @@
 #include <unistd.h>
 #include <limits.h>
 
+// Definition for RGBColor
+struct RGBColor {
+    int r;
+    int g;
+    int b;
+};
 
 using json = nlohmann::json;
 sf::Texture emptyTexture; 
+
+void from_json(const json& j, RGBColor& color) {
+    j.at("r").get_to(color.r);
+    j.at("g").get_to(color.g);
+    j.at("b").get_to(color.b);
+}
+
+
 
 const std::map <Strings, std::wstring> stringMap = {
 
@@ -31,7 +45,13 @@ const std::map <Strings, std::wstring> stringMap = {
     { ENGINE, L"Against computer" },
     { COLOR_SELECTION, L"Color Selection" },
     { CHOOSE_WHITE, L"Play as White" },
-    { CHOOSE_BLACK, L"Play as Black" }
+    { CHOOSE_BLACK, L"Play as Black" },
+    { BLACK_WHITE, L"Black and White " },
+    { LIGHT_WOOD, L"Light Wood" },
+    { DARK_WOOD, L"Dark Wood" },
+    { BLUE_GRAY, L"Blue Gray" },
+    { GREEN_MARBLE, L"Green Marble" },
+    { SLATE_DARK, L"Slate Dark" }
 
 };
 void chessWin::handleMove(move m, std::array<int,4> replace, bool& end, bool rotation, bool passant, Point enPassantPawn) {
@@ -97,7 +117,6 @@ StockFish::StockFish() {
             
             sendCommand("uci");
 
-                // Čekaj dok se ne pojavi "uciok"
             std::string response;
             do {
                 response = getResponse();
@@ -158,9 +177,7 @@ std::string StockFish::getBestMove(const std::string& fenPosition) {
 
     sendCommand("position fen " + fenPosition);
     
-
     sendCommand("go depth 10");  
-    
 
     std::string response;
     do {
@@ -356,7 +373,7 @@ int setTexture(Figure currFigure)
 
 settingsWin::settingsWin() : buttonTextBack(font, load_string(BACK), 30), 
 buttonBack(sf::Vector2f(200, 60)), buttonTextReset(font, load_string(RESET), 30), buttonReset(sf::Vector2f(200, 60)),
-backgroundSprite(backgroundTexture) 
+backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30)
 {
     std::ifstream file("Settings.json");
     if (!file.is_open()) {
@@ -372,13 +389,42 @@ backgroundSprite(backgroundTexture)
     int height = settings["window"]["height"].get<int>();
     int width = settings["window"]["width"].get<int>();
         
+    int selectedIndex = 0;
+    //sf::Text selectedText(font,load_string(boardOptions[selectedIndex]), 20);
+    //selectedText.setFillColor(sf::Color::White);
+    //selectedText.setPosition(sf::Vector2f(50, 50));
+
     
-    buttonReset.setPosition(sf::Vector2f((width - 200) / 2.f, 200));
+    //sf::RectangleShape selectBox(sf::Vector2f(200, 30));
+    //selectBox.setFillColor(sf::Color(100, 100, 200));
+    //selectBox.setPosition(sf::Vector2f(50, 50));
+
+    for (size_t i = 0; i < boardOptions.size(); ++i) {
+        sf::RectangleShape box(sf::Vector2f(200, 30));
+        if (i == selectedIndex) {
+            box.setFillColor(sf::Color(100, 100, 200)); 
+        } else {
+            box.setFillColor(sf::Color(150, 150, 250));
+        }
+        //box.setFillColor(sf::Color(150, 150, 250));
+        box.setPosition(sf::Vector2f((width - 200) / 2.f, 80 + i * 30)); 
+        optionBoxes.push_back(box);
+
+        sf::Text text(font, load_string(boardOptions[i]), 20);
+        text.setFillColor(sf::Color::White);
+        text.setPosition(sf::Vector2f((width - 195) / 2.f, 85 + i * 30));
+        optionTexts.push_back(text);
+    }    
+    
+    
+
+
+    buttonReset.setPosition(sf::Vector2f((width - 200) / 2.f, 400));
     buttonReset.setFillColor(sf::Color::Green);
     buttonReset.setOutlineThickness(2);
 
     
-    buttonBack.setPosition(sf::Vector2f((800 - 200) / 2.f, 300));
+    buttonBack.setPosition(sf::Vector2f((width - 200) / 2.f, 500));
     buttonBack.setFillColor(sf::Color::Blue);
     buttonBack.setOutlineThickness(2);
 
@@ -436,6 +482,12 @@ colorSelectionTitle(font, load_string(CHESS), 30)
 
     boardWindow.setSX(settings["window"]["width"].get<int>());
     boardWindow.setSY(settings["window"]["height"].get<int>());
+
+    boardWindow.setFieldColors({
+        sf::Color(settings["boards"]["slateDark"][0]["r"].get<int>(), settings["boards"]["slateDark"][0]["g"].get<int>(), settings["boards"]["slateDark"][0]["b"].get<int>()),
+        sf::Color(settings["boards"]["slateDark"][1]["r"].get<int>(), settings["boards"]["slateDark"][1]["g"].get<int>(), settings["boards"]["slateDark"][1]["b"].get<int>())
+    });
+
 
     state = GameState::StartScreen;
 
@@ -668,7 +720,9 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                 }
             }
         }
-        else if (state == GameState::Settings) {
+
+    }
+            else if (state == GameState::Settings) {
             if (settingsWindow.getButtonBack().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::StartScreen;
             }
@@ -685,7 +739,6 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                     startGameWithAI(Figure::black);  
                 }
         }
-    }
     else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
 
         boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).setFillColor(boardWindow.getFieldColors()[((boardWindow.getSelectedX() + boardWindow.getSelectedY()) % 2)]);
@@ -936,15 +989,34 @@ bool chessWin::Update() {
         {
             win.setMouseCursor(handCursor);
         }
+        else if(state == GameState::Settings) {
+            bool overOptionBox = false;
+            for (const auto& box : settingsWindow.getOptionBoxes()) {
+                if (box.getGlobalBounds().contains(mousePos)) {
+                    overOptionBox = true;
+                    break;
+                }
+            }
+            bool overOptionText = false;
+            for (const auto& text : settingsWindow.getOptionTexts()) {
+                if (text.getGlobalBounds().contains(mousePos)) {
+                    overOptionText = true;
+                    break;
+                }
+            }
+            if (overOptionBox || overOptionText) {
+                win.setMouseCursor(handCursor);
+            }
+        }
+        else if (state == GameState::ChessBoard && boardWindow.getSelectedFigures() == 1 && boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).getGlobalBounds().contains(mousePos)) {
+            win.setMouseCursor(handCursor);
+        }
         else if (state == GameState::ChessBoard && boardWindow.getSelectedFigures() == 0) {
             win.setMouseCursor(arrowCursor);
         }
         else if(state == GameState::ColorSelection && (buttonWhite.getGlobalBounds().contains(mousePos) || buttonBlack.getGlobalBounds().contains(mousePos)))
         {
             win.setMouseCursor(handCursor);
-        }
-        else {
-            win.setMouseCursor(arrowCursor);
         }
         if (event->is<sf::Event::Resized>()) {
             //handleResized();
@@ -983,6 +1055,11 @@ bool chessWin::Update() {
     }
     else if (state == GameState::Settings) {
         win.draw(settingsWindow.getBackgroundSprite());
+        //win.draw(settingsWindow.getTitle());
+        win.draw(settingsWindow.getSelectBox());
+        win.draw(settingsWindow.getSelectBoxText());
+        for (auto& box : settingsWindow.getOptionBoxes()) win.draw(box);
+        for (auto& text : settingsWindow.getOptionTexts()) win.draw(text);
         win.draw(settingsWindow.getButtonBack());
         win.draw(settingsWindow.getButtonTextBack());
         win.draw(settingsWindow.getButtonReset());

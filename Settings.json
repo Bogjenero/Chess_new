@@ -50,9 +50,30 @@
     }
   },
   "boards":{
-    "purple": "./images/Boards/purple.png",
-    "classic": "./images/Boards/board.png",
-    "black": "./images/Boards/black_white_board.png"
+    "blackWhite": [
+      { "r": 0, "g": 0, "b": 0 },
+      { "r": 255, "g": 255, "b": 255 }
+    ],
+    "lightWood": [
+      { "r": 222, "g": 184, "b": 135 },
+      { "r": 245, "g": 222, "b": 179 }
+    ],
+    "darkWood": [
+      { "r": 139, "g": 69, "b": 19 },
+      { "r": 205, "g": 133, "b": 63 }
+    ],
+    "blueGray": [
+      { "r": 100, "g": 149, "b": 237 },   
+      { "r": 230, "g": 230, "b": 250 }    
+    ],
+    "greenMarble": [
+      { "r": 34, "g": 139, "b": 34 },     
+      { "r": 245, "g": 245, "b": 220 }    
+    ],
+    "slateDark": [
+      { "r": 47, "g": 79, "b": 79 },      
+      { "r": 169, "g": 169, "b": 169 }    
+    ]
   },
   "start_background": "./images/Chess_start_background.jpg",
   "settings_background": "./images/Chess_settings_background.png"

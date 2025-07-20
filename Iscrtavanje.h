@@ -53,7 +53,13 @@ enum  Strings {
 	ENGINE,
 	COLOR_SELECTION,
 	CHOOSE_WHITE,
-	CHOOSE_BLACK
+	CHOOSE_BLACK, 
+	BLACK_WHITE,
+	LIGHT_WOOD,
+	DARK_WOOD,
+	BLUE_GRAY,
+	GREEN_MARBLE,
+	SLATE_DARK
 };
 std::wstring  load_string(Strings uID);
 
@@ -72,7 +78,16 @@ private:
 
 	sf::Texture backgroundTexture;
 	sf::Sprite backgroundSprite; 
-	
+
+	sf::RectangleShape selectBox;
+	sf::Text selectBoxText;
+	sf::Text selectedText;
+
+	std::vector<sf::RectangleShape> optionBoxes;
+    std::vector<sf::Text> optionTexts;
+
+	std::vector<Strings> boardOptions = {BLACK_WHITE, LIGHT_WOOD, DARK_WOOD, BLUE_GRAY, GREEN_MARBLE, SLATE_DARK};
+
 public:
 	settingsWin();
 	sf::RectangleShape getButtonBack() { return buttonBack; } 
@@ -81,6 +96,11 @@ public:
 	sf::Text getButtonTextReset() { return buttonTextReset; } 
 	sf::Sprite getBackgroundSprite() { return backgroundSprite; }
 	
+	sf::RectangleShape getSelectBox() { return selectBox; }
+	sf::Text getSelectedText() { return selectedText; }
+	sf::Text getSelectBoxText() { return selectBoxText; }
+	std::vector<sf::RectangleShape> getOptionBoxes() { return optionBoxes; }
+	std::vector<sf::Text> getOptionTexts() { return optionTexts; }
 
 };
 class boardWin {
@@ -133,6 +153,7 @@ public:
 		void setSelected (int x,int y) { selected[0] = x; selected[1] = y; }
 		void setBoardSquareAt(int i, int j, const sf::RectangleShape& square) { boardSquares[i][j] = square; }
 		std::array<sf::Color, 2> getFieldColors() { return fieldColors; }
+		void setFieldColors(const std::array<sf::Color, 2>& colors) { fieldColors = colors; }
 		int getSelectedFigures() { return selectedFigures; }
 		void setSelectedFigures(int figures) { selectedFigures = figures; }
 		boardWin();
