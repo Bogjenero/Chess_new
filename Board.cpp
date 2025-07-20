@@ -587,7 +587,6 @@ bool chessBoard::playMove(move req, std::array<int,4>& replace, bool& end, bool&
 
     
     if (isKingInCheck(tempBoard, turn)) {
-        std::cout << "Move puts king in check, reverting." << std::endl;
         return false;
     }
 

@@ -34,8 +34,24 @@ const std::map <Strings, std::wstring> stringMap = {
     { CHOOSE_BLACK, L"Play as Black" }
 
 };
-
-
+void chessWin::handleMove(move m, std::array<int,4> replace, bool& end, bool rotation, bool passant, Point enPassantPawn) {
+    boardWindow.MapPieces(m);
+    if (rotation) {
+        move m2(Point(replace[0], replace[1]), Point(replace[2], replace[3]));
+        boardWindow.MapPieces(m2);
+    }
+    if (passant) {
+        boardWindow.RemovePieceAt(enPassantPawn);
+    }
+    if (end) {
+        DrawSquares();
+        DrawPieces();
+        win.display();
+        drawVictoryWindow(cBoard.turn);
+    } else {
+        cBoard.nextTurn();
+    }
+}
 std::wstring load_string(Strings uID) {
 
     static const std::wstring emptyString = L"";
@@ -63,9 +79,8 @@ StockFish::StockFish() {
         if (pid == 0) {
             // child process - Stockfish
 
-            // Preusmjeri stdin na čitanje iz toStockfish pipea
+            
             dup2(toStockfish[0], STDIN_FILENO);
-            // Preusmjeri stdout na pisanje u fromStockfish pipea
             dup2(fromStockfish[1], STDOUT_FILENO);
 
             // Zatvori nepotrebne pipe-ove
@@ -78,28 +93,20 @@ StockFish::StockFish() {
         } else {
             // parent process
             close(toStockfish[0]);   // zatvori čitanje pipea za slanje Stockfishu
-            close(fromStockfish[1]); // zatvori pisanje pipea za čitanje od Stockfisha
-                
-            std::cout << "Stockfish je uspješno pokrenut! PID: " << pid << std::endl;
-
-                // Pošalji "uci" komandu
+            close(fromStockfish[1]); // zatvori pisanje pipea za čitanje od Stockfisha              
+            
             sendCommand("uci");
 
                 // Čekaj dok se ne pojavi "uciok"
             std::string response;
             do {
                 response = getResponse();
-                std::cout << ">> " << response;
             } while (response.find("uciok") == std::string::npos);
-                
-                // Pošalji "isready" komandu
+                   
             sendCommand("isready");
-
-                // Čekaj dok se ne pojavi "readyok"
             do {
                 response = getResponse();
-                std::cout << ">> " << response;
-            } while (response.find("readyok") == std::string::npos);                
+            } while (response.find("readyok") == std::string::npos);
         }
     #endif
 }
@@ -146,23 +153,23 @@ std::string StockFish::getResponse() {
     return response;
 }
 
-// In your StockFish class, add this method:
+
 std::string StockFish::getBestMove(const std::string& fenPosition) {
-    // Set the position
+
     sendCommand("position fen " + fenPosition);
     
-    // Get the best move
-    sendCommand("go depth 10");  // or "go movetime 1000" for time-based
+
+    sendCommand("go depth 10");  
     
-    // Read response until you get "bestmove"
+
     std::string response;
     do {
         response = getResponse();
     } while (response.find("bestmove") == std::string::npos);
     
-    // Extract the move from response (format: "bestmove e2e4")
+
     size_t pos = response.find("bestmove ") + 9;
-    return response.substr(pos, 4);  // Return just the move (e.g., "e2e4")
+    return response.substr(pos, 4);  
 }
 
 
@@ -629,25 +636,21 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                    return;
                 }
                 else {                
-                    boardWindow.setSelected(projX, projY);
-                    boardWindow.getBoardSquareAt(projX, projY).setFillColor(sf::Color::Yellow);
+                    selectFigures(projX, projY);
                     boardWindow.setSelectedFigures(1);
                 }
             }
             else {
                 if (boardWindow.getSelectedX() == projX && boardWindow.getSelectedY() == projY) {
-                    boardWindow.getBoardSquareAt(projX, projY).setFillColor(boardWindow.getFieldColors()[((projX + projY) % 2)]);
+                    deselectFigures(projX, projY);
                     boardWindow.setSelectedFigures(0);
                 }
-                else if(cBoard.chessBoard.arr[projX][projY].figure != Figure::Empty &&  cBoard.chessBoard.arr[projX][projY].color == cBoard.chessBoard.arr[boardWindow.getSelectedX()][boardWindow.getSelectedY()].color) {
-                        
-                        boardWindow.getBoardSquareAt(projX, projY).setFillColor(boardWindow.getFieldColors()[((projX  + projY) % 2)]);
-                        boardWindow.setSelected(projX, projY);
-                        boardWindow.setSelected(boardWindow.getSelectedX(), projY);
-                        boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).setFillColor(sf::Color(186, 202, 68));
-                        
-                }
-                else {
+             else if(cBoard.chessBoard.arr[projX][projY].figure != Figure::Empty &&  cBoard.chessBoard.arr[projX][projY].color == cBoard.turn) {
+                    deselectFigures(boardWindow.getSelectedX(), boardWindow.getSelectedY());
+                    selectFigures(projX, projY);
+                    return;
+            }
+            else {
                     move m(Point(boardWindow.getSelectedX(), boardWindow.getSelectedY()),Point( projX, projY));
                     std::array<int, 4> replace = { 0,0,0,0 };
                     bool rotation = false;
@@ -655,89 +658,12 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                     bool Passant = false;
                     Point enPassantPawn;
                     if (cBoard.playMove(m,replace,end,rotation,enPassantPawn,Passant)) {
-                        if(rotation)
-						{
-							    boardWindow.MapPieces(m);
-                              move m2 = move(Point(replace[0], replace[1]),Point( replace[2], replace[3]));
-                              boardWindow.MapPieces(m2);
-                              cBoard.nextTurn();
-						}
-                        else if (Passant) {
-                            boardWindow.MapPieces(m);
-                            boardWindow.RemovePieceAt(enPassantPawn);
-                            cBoard.nextTurn();
-                        }
-                        else {
-                            boardWindow.MapPieces(m);
-                            if (end) {
-                                DrawSquares();
-                                DrawPieces();
-                                win.display();
-                                drawVictoryWindow(cBoard.turn);
-                            }
-                            else {
-                                cBoard.nextTurn();
-                            }
-                        }
-                    }                            // After successful human move, trigger AI move if playing against AI
-                            if (playingAgainstAI && !end && isAITurn()) {
-                                // Small delay to show human move
-                                sf::sleep(sf::milliseconds(100));
-                                
-                                // Get current board as FEN
-                                std::string currentFEN = cBoard.boardToFEN();
-                                std::cout << "Current FEN: " << currentFEN << std::endl;
-                                
-                                // Get best move from Stockfish
-                                std::string bestMove = stockfish.getBestMove(currentFEN);
-                                std::cout << "Stockfish suggests: " << bestMove << std::endl;
-                                
-                                if (bestMove.length() >= 4) {
-                                    // Convert algebraic notation to coordinates
-                                    int fromX = bestMove[0] - 'a';
-                                    int fromY = 7 - (bestMove[1] - '1');
-                                    int toX = bestMove[2] - 'a';
-                                    int toY = 7 - (bestMove[3] - '1');
-                                    
-                                    // Create and execute AI move
-                                    move aiMove(Point(fromX, fromY), Point(toX, toY));
-                                    std::array<int, 4> aiReplace = {0, 0, 0, 0};
-                                    bool aiRotation = false;
-                                    bool aiEnd = false;
-                                    bool aiPassant = false;
-                                    Point aiEnPassantPawn;
-                                    
-                                    if (cBoard.playMove(aiMove, aiReplace, aiEnd, aiRotation, aiEnPassantPawn, aiPassant)) {
-                                        if(aiRotation) {
-                                            boardWindow.MapPieces(aiMove);
-                                            move aiM2 = move(Point(aiReplace[0], aiReplace[1]), Point(aiReplace[2], aiReplace[3]));
-                                            boardWindow.MapPieces(aiM2);
-                                            cBoard.nextTurn();
-                                        }
-                                        else if (aiPassant) {
-                                            boardWindow.MapPieces(aiMove);
-                                            boardWindow.RemovePieceAt(aiEnPassantPawn);
-                                            cBoard.nextTurn();
-                                        }
-                                        else {
-                                            boardWindow.MapPieces(aiMove);
-                                            if (aiEnd) {
-                                                DrawSquares();
-                                                DrawPieces();
-                                                win.display();
-                                                drawVictoryWindow(cBoard.turn);
-                                            }
-                                            else {
-                                                cBoard.nextTurn();
-                                            }
-                                        }
-                                        std::cout << "AI move executed successfully" << std::endl;
-                                    }
-                                }
-                            }
-                        }
+                        handleMove(m, replace, end, rotation, Passant, enPassantPawn);
+                    }
+                    if (playingAgainstAI && !end && isAITurn()) {
+                            playAiMove();
+                    }
                     boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).setFillColor(boardWindow.getFieldColors()[((boardWindow.getSelectedX() + boardWindow.getSelectedY()) % 2)]);
-                    //selectedFigures = 0;
                     boardWindow.setSelectedFigures(0);
                 }
             }
@@ -753,12 +679,10 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
         }
        else if (state == GameState::ColorSelection) {
                 if (buttonWhite.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                    std::cout << "Player chose WHITE" << std::endl;
-                    startGameWithAI(Figure::white);  // Human plays white, AI plays black
+                    startGameWithAI(Figure::white);  
                 }
                 else if (buttonBlack.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                    std::cout << "Player chose BLACK" << std::endl;
-                    startGameWithAI(Figure::black);  // Human plays black, AI plays white
+                    startGameWithAI(Figure::black);  
                 }
         }
     }
@@ -767,9 +691,8 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
         boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).setFillColor(boardWindow.getFieldColors()[((boardWindow.getSelectedX() + boardWindow.getSelectedY()) % 2)]);
         boardWindow.setSelectedFigures(0);
     }
-
+    }
 }
-
 void chessWin::handleClosed() {
     win.close();
 }
@@ -815,13 +738,11 @@ void chessWin::resetGame() {
             if (currFigure.figure != Figure::Empty) {
                 int textureIndex = setTexture(currFigure);
                 boardWindow.setChessPieceTexture(index, boardWindow.getPieceTexture(textureIndex));
-                //chessPieces[index].Sprite.setTexture(pieceTex[textureIndex], true);
                 boardWindow.setChessPieceDraw(index, 1);
-                //chessPieces[index].draw = 1;
+                
             }
             else {
                 boardWindow.setChessPieceDraw(index, 0);
-                //chessPieces[index].draw = 0;
             }
             ++index;
         }
@@ -949,13 +870,11 @@ void chessWin::drawVictoryWindow(Figure::Colors turn)
                             button.getPosition().y + button.getSize().y / 2.0f));
 
     while (Victorywindow.isOpen()) {
-        //sf::Event event;
         std::optional<sf::Event> event;
         while (auto eventOpt =  Victorywindow.pollEvent()) {
             event = eventOpt;
             if (event->is<sf::Event::Closed>())
                 Victorywindow.close();
-            //else if (event->is == sf::Event::MouseButtonPressed)
             else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
             {
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left)
@@ -1097,11 +1016,11 @@ void chessWin::showColorSelection() {
     buttonBlack.setOutlineThickness(3);
     
  
-    buttonTextWhite = sf::Text(font, L"Play as White", 20);
+    buttonTextWhite = sf::Text(font,load_string(CHOOSE_WHITE), 20);
     buttonTextWhite.setFillColor(sf::Color::Black);
     buttonTextWhite.setPosition(sf::Vector2f(210, 330));
-    
-    buttonTextBlack = sf::Text(font, L"Play as Black", 20);
+
+    buttonTextBlack = sf::Text(font, load_string(CHOOSE_BLACK), 20);
     buttonTextBlack.setFillColor(sf::Color::White);
     buttonTextBlack.setPosition(sf::Vector2f(460, 330));
     
@@ -1115,34 +1034,23 @@ void chessWin::startGameWithAI(Figure::Colors Color) {
     humanColor = Color;
     playingAgainstAI = true;
     state = GameState::ChessBoard;
-    
-    // Reset and initialize the board
-    cBoard = chessBoard();  // Reset to starting position
+
+    cBoard = chessBoard();
     boardWindow.MapPieces();
-    
-    std::cout << "Starting AI game - Human plays as: " 
-              << (humanColor == Figure::white ? "White" : "Black") << std::endl;
-    
-    // If human chose black, AI (white) makes the first move
+  
     if (humanColor == Figure::black) {
-        std::cout << "AI (White) making first move..." << std::endl;
-        
-        // Get current board as FEN
-        std::string currentFEN = cBoard.boardToFEN();
-        std::cout << "Current FEN: " << currentFEN << std::endl;
-        
-        // Get best move from Stockfish
+                
+        std::string currentFEN = cBoard.boardToFEN();       
         std::string bestMove = stockfish.getBestMove(currentFEN);
-        std::cout << "Stockfish suggests: " << bestMove << std::endl;
-        
+
         if (bestMove.length() >= 4) {
-            // Convert algebraic notation to coordinates
-            int fromX = bestMove[0] - 'a';  // a=0, b=1, etc.
-            int fromY = 7 - (bestMove[1] - '1');  // 1=7, 2=6, etc.
+        
+            int fromX = bestMove[0] - 'a';  
+            int fromY = 7 - (bestMove[1] - '1');  
             int toX = bestMove[2] - 'a';
             int toY = 7 - (bestMove[3] - '1');
             
-            // Create and execute the move
+        
             move m(Point(fromX, fromY), Point(toX, toY));
             std::array<int, 4> replace = {0, 0, 0, 0};
             bool rotation = false;
@@ -1168,11 +1076,68 @@ void chessWin::startGameWithAI(Figure::Colors Color) {
                         cBoard.nextTurn();
                     }
                 }
-                std::cout << "AI move executed successfully" << std::endl;
             }
         }
     }
 }
 bool chessWin::isAITurn() const {
     return playingAgainstAI && (cBoard.turn != humanColor);
+}
+
+
+void chessWin::playAiMove(){
+                               
+    sf::sleep(sf::milliseconds(200));
+                                                                             
+    std::string currentFEN = cBoard.boardToFEN(); //Pretvaram ploču u FEN zapis
+                                
+    std::string bestMove = stockfish.getBestMove(currentFEN); //Stockfish vraća najbolji potez u algebarskoj notaciji
+
+    if (bestMove.length() >= 4) {
+
+        int fromX = bestMove[0] - 'a';
+        int fromY = 7 - (bestMove[1] - '1');
+        int toX = bestMove[2] - 'a';
+        int toY = 7 - (bestMove[3] - '1');
+
+        move aiMove(Point(fromX, fromY), Point(toX, toY));
+        std::array<int, 4> aiReplace = {0, 0, 0, 0};
+        bool aiRotation = false;
+        bool aiEnd = false;
+        bool aiPassant = false;
+        Point aiEnPassantPawn;
+                                  
+        if (cBoard.playMove(aiMove, aiReplace, aiEnd, aiRotation, aiEnPassantPawn, aiPassant)) {
+            if(aiRotation) {
+                boardWindow.MapPieces(aiMove);
+                move aiM2 = move(Point(aiReplace[0], aiReplace[1]), Point(aiReplace[2], aiReplace[3]));
+                boardWindow.MapPieces(aiM2);
+                cBoard.nextTurn();
+            } else if (aiPassant) {
+                boardWindow.MapPieces(aiMove);
+                boardWindow.RemovePieceAt(aiEnPassantPawn);
+                cBoard.nextTurn();
+            } else {
+                boardWindow.MapPieces(aiMove);
+                if (aiEnd) {
+                DrawSquares();
+                DrawPieces();
+                win.display();
+                drawVictoryWindow(cBoard.turn);
+            } else {
+                cBoard.nextTurn();
+                }
+            }
+        }   
+    }
+}
+
+void chessWin::selectFigures(int projX, int projY) {
+    
+    boardWindow.setSelected(projX, projY);
+    boardWindow.getBoardSquareAt(projX, projY).setFillColor(sf::Color::Yellow);
+}
+
+void chessWin::deselectFigures(int projX, int projY) {
+     boardWindow.getBoardSquareAt(projX, projY).setFillColor(boardWindow.getFieldColors()[((projX + projY) % 2)]);
 }

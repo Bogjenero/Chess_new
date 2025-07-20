@@ -201,13 +201,17 @@ class chessWin {
 		void showColorSelection();
 		void DrawSquares(); // crta kvadrate na šahovskoj ploči
 		void DrawPieces(); // crta figure
-	
+		void selectFigures(int projX, int projY);
+		void deselectFigures(int projX, int projY);
+		bool isAITurn() const; 
+		void playAiMove(); 
+		void handleMove(move m, std::array<int,4> replace, bool& end, bool rotation, bool passant, Point enPassantPawn);
 	public:
 		chessBoard cBoard; //šahovska ploča
 		bool Update();// rukuje događajima koji su izvedeni na prozoru
 		chessWin( int width, int height, std::wstring name, const std::string imgPath[12]); 
 		chessWin();			
 		void startGameWithAI(Figure::Colors humanColor);
-		bool isAITurn() const; // provjerava je li potez AI
+		
 };
 
