@@ -51,7 +51,8 @@ const std::map <Strings, std::wstring> stringMap = {
     { DARK_WOOD, L"Dark Wood" },
     { BLUE_GRAY, L"Blue Gray" },
     { GREEN_MARBLE, L"Green Marble" },
-    { SLATE_DARK, L"Slate Dark" }
+    { SLATE_DARK, L"Slate Dark" },
+    { APPLY, L"Apply Changes" }
 
 };
 void chessWin::handleMove(move m, std::array<int,4> replace, bool& end, bool rotation, bool passant, Point enPassantPawn) {
@@ -359,7 +360,6 @@ int setTexture(Figure currFigure)
         {
             return 11;
         }
-
         else {
             return -1; 
         }
@@ -373,7 +373,8 @@ int setTexture(Figure currFigure)
 
 settingsWin::settingsWin() : buttonTextBack(font, load_string(BACK), 30), 
 buttonBack(sf::Vector2f(200, 60)), buttonTextReset(font, load_string(RESET), 30), buttonReset(sf::Vector2f(200, 60)),
-backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30)
+backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30),
+applyChangesButton(sf::Vector2f(200, 60)), buttonTextApplyChanges(font, load_string(APPLY), 30)
 {
     std::ifstream file("Settings.json");
     if (!file.is_open()) {
@@ -390,14 +391,22 @@ backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBox
     int width = settings["window"]["width"].get<int>();
         
     int selectedIndex = 0;
-    //sf::Text selectedText(font,load_string(boardOptions[selectedIndex]), 20);
-    //selectedText.setFillColor(sf::Color::White);
-    //selectedText.setPosition(sf::Vector2f(50, 50));
 
+    applyChangesButton.setPosition(sf::Vector2f((width - 200) / 2.f, 300));
+    applyChangesButton.setFillColor(sf::Color::Green);
+    applyChangesButton.setOutlineThickness(2);
+
+    sf::Vector2f buttonPos = applyChangesButton.getPosition();
+    sf::Vector2f buttonSize = applyChangesButton.getSize();
+    buttonTextApplyChanges.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextApplyChanges.setFillColor(sf::Color::White);
     
-    //sf::RectangleShape selectBox(sf::Vector2f(200, 30));
-    //selectBox.setFillColor(sf::Color(100, 100, 200));
-    //selectBox.setPosition(sf::Vector2f(50, 50));
+
+    sf::FloatRect textBoundsApply = buttonTextApplyChanges.getLocalBounds();
+
+    buttonTextApplyChanges.setOrigin(sf::Vector2f(textBoundsApply.position.x + textBoundsApply.size.x / 2.0f, textBoundsApply.position.y + textBoundsApply.size.y / 2.0f));
+    //buttonTextReset.setOrigin(sf::Vector2f(textBoundsReset.position.x + textBoundsReset.size.x / 2.0f, textBoundsReset.position.y + textBoundsReset.size.y / 2.0f));
+
 
     for (size_t i = 0; i < boardOptions.size(); ++i) {
         sf::RectangleShape box(sf::Vector2f(200, 30));
@@ -406,7 +415,6 @@ backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBox
         } else {
             box.setFillColor(sf::Color(150, 150, 250));
         }
-        //box.setFillColor(sf::Color(150, 150, 250));
         box.setPosition(sf::Vector2f((width - 200) / 2.f, 80 + i * 30)); 
         optionBoxes.push_back(box);
 
@@ -433,8 +441,8 @@ backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBox
     sf::FloatRect textBounds = buttonTextBack.getLocalBounds();
     buttonTextBack.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
     
-    sf::Vector2f buttonPos = buttonBack.getPosition();
-    sf::Vector2f buttonSize = buttonBack.getSize();
+    buttonPos = buttonBack.getPosition();
+    buttonSize = buttonBack.getSize();
     buttonTextBack.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
     buttonTextBack.setFillColor(sf::Color::White);
 
@@ -723,6 +731,24 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
 
     }
             else if (state == GameState::Settings) {
+                const auto& boxes = settingsWindow.getOptionBoxes();
+                for (size_t i = 0; i < boxes.size(); ++i) {
+                    if (boxes[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+                        settingsWindow.setSelectedIndex(i); 
+                        std::cout << "Selected option: " << i << std::endl;
+                        break;
+                    }
+                }
+
+                
+                const auto& texts = settingsWindow.getOptionTexts();
+                for (size_t i = 0; i < texts.size(); ++i) {
+                    if (texts[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y)) ) {
+                        settingsWindow.setSelectedText(texts[i]);
+                        std::cout << "Selected option text: " << texts[i].getString().toAnsiString() << std::endl;
+                        break;
+                    }
+                }
             if (settingsWindow.getButtonBack().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::StartScreen;
             }
@@ -985,7 +1011,7 @@ bool chessWin::Update() {
         {
             win.setMouseCursor(arrowCursor);
         }
-        if(state == GameState::Settings && (settingsWindow.getButtonBack().getGlobalBounds().contains(mousePos) || settingsWindow.getButtonReset().getGlobalBounds().contains(mousePos)))
+        if(state == GameState::Settings && (settingsWindow.getButtonBack().getGlobalBounds().contains(mousePos) || settingsWindow.getButtonReset().getGlobalBounds().contains(mousePos) || settingsWindow.getApplyChangesButton().getGlobalBounds().contains(mousePos)))
         {
             win.setMouseCursor(handCursor);
         }
@@ -1055,9 +1081,8 @@ bool chessWin::Update() {
     }
     else if (state == GameState::Settings) {
         win.draw(settingsWindow.getBackgroundSprite());
-        //win.draw(settingsWindow.getTitle());
-        win.draw(settingsWindow.getSelectBox());
-        win.draw(settingsWindow.getSelectBoxText());
+        win.draw(settingsWindow.getApplyChangesButton());
+        win.draw(settingsWindow.getButtonTextApplyChanges());
         for (auto& box : settingsWindow.getOptionBoxes()) win.draw(box);
         for (auto& text : settingsWindow.getOptionTexts()) win.draw(text);
         win.draw(settingsWindow.getButtonBack());

@@ -59,7 +59,8 @@ enum  Strings {
 	DARK_WOOD,
 	BLUE_GRAY,
 	GREEN_MARBLE,
-	SLATE_DARK
+	SLATE_DARK,
+	APPLY
 };
 std::wstring  load_string(Strings uID);
 
@@ -76,12 +77,17 @@ private:
 	sf::RectangleShape buttonReset; 
 	sf::Text buttonTextReset;
 
+	sf::RectangleShape applyChangesButton;
+	sf::Text buttonTextApplyChanges;
+
+
 	sf::Texture backgroundTexture;
 	sf::Sprite backgroundSprite; 
 
 	sf::RectangleShape selectBox;
 	sf::Text selectBoxText;
 	sf::Text selectedText;
+	int selectedIndex;
 
 	std::vector<sf::RectangleShape> optionBoxes;
     std::vector<sf::Text> optionTexts;
@@ -95,12 +101,16 @@ public:
 	sf::RectangleShape getButtonReset() { return buttonReset; }
 	sf::Text getButtonTextReset() { return buttonTextReset; } 
 	sf::Sprite getBackgroundSprite() { return backgroundSprite; }
-	
+	sf::RectangleShape getApplyChangesButton() { return applyChangesButton; }
+	sf::Text getButtonTextApplyChanges() { return buttonTextApplyChanges; }	
+
 	sf::RectangleShape getSelectBox() { return selectBox; }
 	sf::Text getSelectedText() { return selectedText; }
 	sf::Text getSelectBoxText() { return selectBoxText; }
 	std::vector<sf::RectangleShape> getOptionBoxes() { return optionBoxes; }
 	std::vector<sf::Text> getOptionTexts() { return optionTexts; }
+	void setSelectedText(const sf::Text& text) { selectedText = text; }
+	void setSelectedIndex(int index) { selectedIndex = index; }
 
 };
 class boardWin {
