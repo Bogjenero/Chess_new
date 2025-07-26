@@ -1,81 +1,132 @@
 {
-  "app_name": "Chess",
-  "user_values": {
-    "language": "en",
-    "theme": "light",
-    "figuresTye" : "modern"
-    
-  },
-  "window": {
-    "width": 800,
-    "height": 800
-  },
-  "fullscreen": false,
-  "figures":{
-    "modern": {
-        "white": {
-          "pawn": "./images/Pieces/Modern/PawnW.png",
-          "rook": "./images/Pieces/Modern/RookW.png",
-          "knight": "./images/Pieces/Modern/KnightW.png",
-          "bishop": "./images/Pieces/Modern/BishopW.png",
-          "queen": "./images/Pieces/Modern/QueenW.png",
-          "king": "./images/Pieces/Modern/KingW.png"
+    "UserOptions": {
+        "board_style": "Blue Gray",
+        "board_style_index": 4,
+        "figure_style": "modern",
+        "language": "en",
+        "music": true,
+        "notifications": true,
+        "sound": true,
+        "theme": "light"
+    },
+    "app_name": "Chess",
+    "boards": {
+        "blackWhite": [
+            {
+                "b": 0,
+                "g": 0,
+                "r": 0
+            },
+            {
+                "b": 255,
+                "g": 255,
+                "r": 255
+            }
+        ],
+        "blueGray": [
+            {
+                "b": 237,
+                "g": 149,
+                "r": 100
+            },
+            {
+                "b": 250,
+                "g": 230,
+                "r": 230
+            }
+        ],
+        "darkWood": [
+            {
+                "b": 19,
+                "g": 69,
+                "r": 139
+            },
+            {
+                "b": 63,
+                "g": 133,
+                "r": 205
+            }
+        ],
+        "greenMarble": [
+            {
+                "b": 34,
+                "g": 139,
+                "r": 34
+            },
+            {
+                "b": 220,
+                "g": 245,
+                "r": 245
+            }
+        ],
+        "lightWood": [
+            {
+                "b": 135,
+                "g": 184,
+                "r": 222
+            },
+            {
+                "b": 179,
+                "g": 222,
+                "r": 245
+            }
+        ],
+        "slateDark": [
+            {
+                "b": 79,
+                "g": 79,
+                "r": 47
+            },
+            {
+                "b": 169,
+                "g": 169,
+                "r": 169
+            }
+        ]
+    },
+    "figures": {
+        "classic": {
+            "black": {
+                "bishop": "./images/Pieces/Deafult/bb.png",
+                "king": "./images/Pieces/Deafult/bk.png",
+                "knight": "./images/Pieces/Deafult/bn.png",
+                "pawn": "./images/Pieces/Default/bp.png",
+                "queen": "./images/Pieces/Deafult/bq.png",
+                "rook": "./images/Pieces/Deafult/br.png"
+            },
+            "white": {
+                "bishop": "./images/Pieces/Default/wb.png",
+                "king": "./images/Pieces/Default/wk.png",
+                "knight": "./images/Pieces/Default/wn.png",
+                "pawn": "./images/Pieces/Default/wp.png",
+                "queen": "./images/Pieces/Default/wq.png",
+                "rook": "./images/Pieces/Default/wr.png"
+            }
         },
-        "black": {
-          "pawn": "./images/Pieces/Modern/Pawn.png",
-          "rook": "./images/Pieces/Modern/Rook.png",
-          "knight": "./images/Pieces/Modern/Knight.png",      
-          "bishop": "./images/Pieces/Modern/Bishop.png",
-          "queen": "./images/Pieces/Modern/Queen.png",
-          "king": "./images/Pieces/Modern/King.png"
+        "modern": {
+            "black": {
+                "bishop": "./images/Pieces/Modern/Bishop.png",
+                "king": "./images/Pieces/Modern/King.png",
+                "knight": "./images/Pieces/Modern/Knight.png",
+                "pawn": "./images/Pieces/Modern/Pawn.png",
+                "queen": "./images/Pieces/Modern/Queen.png",
+                "rook": "./images/Pieces/Modern/Rook.png"
+            },
+            "white": {
+                "bishop": "./images/Pieces/Modern/BishopW.png",
+                "king": "./images/Pieces/Modern/KingW.png",
+                "knight": "./images/Pieces/Modern/KnightW.png",
+                "pawn": "./images/Pieces/Modern/PawnW.png",
+                "queen": "./images/Pieces/Modern/QueenW.png",
+                "rook": "./images/Pieces/Modern/RookW.png"
+            }
         }
     },
-    "classic": {
-         "white": {
-          "pawn": "./images/Pieces/Default/wp.png",
-          "rook": "./images/Pieces/Default/wr.png",
-          "knight": "./images/Pieces/Default/wn.png",
-          "bishop": "./images/Pieces/Default/wb.png",
-          "queen": "./images/Pieces/Default/wq.png",
-          "king": "./images/Pieces/Default/wk.png"
-        },
-        "black": {
-          "pawn": "./images/Pieces/Default/bp.png",
-          "rook": "./images/Pieces/Deafult/br.png",
-          "knight": "./images/Pieces/Deafult/bn.png",      
-          "bishop": "./images/Pieces/Deafult/bb.png",
-          "queen": "./images/Pieces/Deafult/bq.png",
-          "king": "./images/Pieces/Deafult/bk.png"
-        }
+    "fullscreen": false,
+    "settings_background": "./images/Chess_settings_background.png",
+    "start_background": "./images/Chess_start_background.jpg",
+    "window": {
+        "height": 800,
+        "width": 800
     }
-  },
-  "boards":{
-    "blackWhite": [
-      { "r": 0, "g": 0, "b": 0 },
-      { "r": 255, "g": 255, "b": 255 }
-    ],
-    "lightWood": [
-      { "r": 222, "g": 184, "b": 135 },
-      { "r": 245, "g": 222, "b": 179 }
-    ],
-    "darkWood": [
-      { "r": 139, "g": 69, "b": 19 },
-      { "r": 205, "g": 133, "b": 63 }
-    ],
-    "blueGray": [
-      { "r": 100, "g": 149, "b": 237 },   
-      { "r": 230, "g": 230, "b": 250 }    
-    ],
-    "greenMarble": [
-      { "r": 34, "g": 139, "b": 34 },     
-      { "r": 245, "g": 245, "b": 220 }    
-    ],
-    "slateDark": [
-      { "r": 47, "g": 79, "b": 79 },      
-      { "r": 169, "g": 169, "b": 169 }    
-    ]
-  },
-  "start_background": "./images/Chess_start_background.jpg",
-  "settings_background": "./images/Chess_settings_background.png"
-
-}   
+}

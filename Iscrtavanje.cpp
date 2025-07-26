@@ -5,9 +5,10 @@
 #include <sys/select.h>
 #include <nlohmann/json.hpp> 
 #include <fstream>
-
 #include <unistd.h>
 #include <limits.h>
+
+
 
 // Definition for RGBColor
 struct RGBColor {
@@ -16,7 +17,6 @@ struct RGBColor {
     int b;
 };
 
-using json = nlohmann::json;
 sf::Texture emptyTexture; 
 
 void from_json(const json& j, RGBColor& color) {
@@ -27,34 +27,6 @@ void from_json(const json& j, RGBColor& color) {
 
 
 
-const std::map <Strings, std::wstring> stringMap = {
-
-    { START, L"Start Game" },
-    { VICTORY, L"Victory!" },
-    { WHITE_WINS, L"White Wins!" },
-    { BLACK_WINS, L"Black Wins!" },
-    { DRAW, L"Draw!" },
-    { OK, L"OK" },
-    { CHESS, L"Chess Game" },
-    { FINISH, L"Finish the game" },
-    { ENDWINDOW, L"End window" },
-    { QUIT, L"Quit Game"},
-    { SETTINGS, L"Settings" },
-    { BACK, L"Back to Menu" },
-    { RESET, L"Reset Game" },
-    { ENGINE, L"Against computer" },
-    { COLOR_SELECTION, L"Color Selection" },
-    { CHOOSE_WHITE, L"Play as White" },
-    { CHOOSE_BLACK, L"Play as Black" },
-    { BLACK_WHITE, L"Black and White " },
-    { LIGHT_WOOD, L"Light Wood" },
-    { DARK_WOOD, L"Dark Wood" },
-    { BLUE_GRAY, L"Blue Gray" },
-    { GREEN_MARBLE, L"Green Marble" },
-    { SLATE_DARK, L"Slate Dark" },
-    { APPLY, L"Apply Changes" }
-
-};
 void chessWin::handleMove(move m, std::array<int,4> replace, bool& end, bool rotation, bool passant, Point enPassantPawn) {
     boardWindow.MapPieces(m);
     if (rotation) {
@@ -73,122 +45,10 @@ void chessWin::handleMove(move m, std::array<int,4> replace, bool& end, bool rot
         cBoard.nextTurn();
     }
 }
-std::wstring load_string(Strings uID) {
-
-    static const std::wstring emptyString = L"";
-    auto it = stringMap.find(uID);
-    return (it != stringMap.end()) ? it->second : emptyString;
-
-}
-
-StockFish::StockFish() {
-
-    #ifdef _WIN32
-        stockFish = popen("stockfish.exe", "r");
-    #elif __linux__
-        if (pipe(toStockfish) == -1 || pipe(fromStockfish) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-        }
-
-        pid = fork();
-        if (pid == -1) {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        }
-
-        if (pid == 0) {
-            // child process - Stockfish
-
-            
-            dup2(toStockfish[0], STDIN_FILENO);
-            dup2(fromStockfish[1], STDOUT_FILENO);
-
-            // Zatvori nepotrebne pipe-ove
-            close(toStockfish[1]);
-            close(fromStockfish[0]);
-
-            execl("./StockFish/stockfish/stockfish-ubuntu-x86-64-avx2", "stockfish-ubuntu", nullptr);
-            perror("execl failed");
-            exit(EXIT_FAILURE);
-        } else {
-            // parent process
-            close(toStockfish[0]);   // zatvori čitanje pipea za slanje Stockfishu
-            close(fromStockfish[1]); // zatvori pisanje pipea za čitanje od Stockfisha              
-            
-            sendCommand("uci");
-
-            std::string response;
-            do {
-                response = getResponse();
-            } while (response.find("uciok") == std::string::npos);
-                   
-            sendCommand("isready");
-            do {
-                response = getResponse();
-            } while (response.find("readyok") == std::string::npos);
-        }
-    #endif
-}
 
 
-void StockFish::sendCommand(const std::string& command) {
-    #ifdef _WIN32
-        fprintf(stockFish, "%s\n", command.c_str());
-        fflush(stockFish);
-    #elif __linux__
-        write(toStockfish[1], command.c_str(), command.size());
-        write(toStockfish[1], "\n", 1); // dodaj novi red
-    #endif
-}
-std::string StockFish::getResponse() {
-    std::string response;
-    char buffer[256];
-    ssize_t bytesRead;
-    
-    #ifdef _WIN32
-        while (fgets(buffer, sizeof(buffer), stockFish) != nullptr) {
-            response += buffer;
-        }
-    #elif __linux__
-      fd_set readfds;
-        struct timeval timeout;
-
-        FD_ZERO(&readfds);
-        FD_SET(fromStockfish[0], &readfds);
-
-        timeout.tv_sec = 1;         // maksimalno čekaj 1 sekundu
-        timeout.tv_usec = 0;
-
-        int ready = select(fromStockfish[0] + 1, &readfds, nullptr, nullptr, &timeout);
-        if (ready > 0 && FD_ISSET(fromStockfish[0], &readfds)) {
-            bytesRead = read(fromStockfish[0], buffer, sizeof(buffer) - 1);
-            if (bytesRead > 0) {
-                buffer[bytesRead] = '\0';
-                response += buffer;
-            }
-        }
-    #endif
-    
-    return response;
-}
 
 
-std::string StockFish::getBestMove(const std::string& fenPosition) {
-
-    sendCommand("position fen " + fenPosition);
-    
-    sendCommand("go depth 10");  
-
-    std::string response;
-    do {
-        response = getResponse();
-    } while (response.find("bestmove") == std::string::npos);
-    
-
-    size_t pos = response.find("bestmove ") + 9;
-    return response.substr(pos, 4);  
-}
 
 
 
@@ -202,18 +62,7 @@ chessPiece::chessPiece() : Sprite(emptyTexture) {}
 
 
 
-void boardWin::FitToHolder()
-{
-    for (int i = 0; i < 8; ++i)
-    {
-        for (int j = 0; j < 8; ++j)
-        {
-            boardSquares[i][j].setPosition(sf::Vector2f(Holder.position.x + (i * Holder.size.x / 8), Holder.position.y + (j * Holder.size.y / 8)));
-            boardSquares[i][j].setSize(sf::Vector2f(Holder.size.x / 8, Holder.size.y / 8));
-        }
 
-    }
-}
 void chessWin::DrawSquares()
 {
     for (int i = 0; i < 8; ++i)
@@ -233,71 +82,6 @@ void chessWin::DrawPieces()
         {
             drawnPieces++;
             win.draw(boardWindow.getChessPieceAt(i).Sprite);
-        }
-    }
-}
-void boardWin::MapPieces()
-{
-    for (int i = 0; i < 64; ++i)
-    {
-
-        if (chessPieces[i].draw == 1)
-        {
-            
-            chessPieces[i].Sprite.setPosition(sf::Vector2f(Holder.position.x + (chessPieces[i].x * Holder.size.x / 8), Holder.position.y + (chessPieces[i].y * Holder.size.y / 8)));
-            chessPieces[i].Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
-        }
-    }
-}
-void boardWin::MapPieces(move curr)
-{
-    chessPiece* current = nullptr;
-    bool capture = false;
-    for (int i = 0; i < 64; ++i)
-    {
-        if (chessPieces[i].draw == 1)
-        {
-            if (chessPieces[i].x == curr.from.x && chessPieces[i].y == curr.from.y)
-            {
-                current = &chessPieces[i];
-            }
-            if (chessPieces[i].x == curr.to.x && chessPieces[i].y == curr.to.y)
-            {
-                chessPieces[i].draw = 0;
-                capture = true;
-                }
-                chessPieces[i].Sprite.setPosition(sf::Vector2f(Holder.position.x + (chessPieces[i].x * Holder.size.x / 8), Holder.position.y + (chessPieces[i].y * Holder.size.y / 8)));
-                chessPieces[i].Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
-            }
-        }
-        current->x = curr.to.x;
-        current->y = curr.to.y;
-
-        current->Sprite.setPosition(sf::Vector2f(Holder.position.x + (current->x * Holder.size.x / 8), Holder.position.y + (current->y * Holder.size.y / 8)));
-        current->Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
-}
-void boardWin::RemovePieceAt(const Point& position)
-{
-    
-    for (int i = 0; i < 64; ++i)
-    {
-
-        if (chessPieces[i].draw == 1)
-        {
-            
-            if (chessPieces[i].x == position.x && chessPieces[i].y == position.y)
-            {
-                
-                chessPieces[i].draw = 0;
-
-                
-                chessPieces[i].Sprite.setPosition(sf::Vector2f(
-                    Holder.position.x + (chessPieces[i].x * Holder.size.x / 8),
-                    Holder.position.y + (chessPieces[i].y * Holder.size.y / 8)
-                ));
-                chessPieces[i].Sprite.setScale(sf::Vector2f(Holder.size.x / 1600.f, Holder.size.y / 1600.f));
-                return;
-            }
         }
     }
 }
@@ -366,113 +150,10 @@ int setTexture(Figure currFigure)
 
     }
 }
- boardWin::boardWin() : boardSprite(emptyTexture), boardTextture(emptyTexture) {
-
- }   
+ 
 
 
-settingsWin::settingsWin() : buttonTextBack(font, load_string(BACK), 30), 
-buttonBack(sf::Vector2f(200, 60)), buttonTextReset(font, load_string(RESET), 30), buttonReset(sf::Vector2f(200, 60)),
-backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30),
-applyChangesButton(sf::Vector2f(200, 60)), buttonTextApplyChanges(font, load_string(APPLY), 30)
-{
-    std::ifstream file("Settings.json");
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open settings file: Settings.json");
-    } 
-    nlohmann::json settings;
-    file >> settings;
 
-     if (!font.openFromFile("arial.ttf")) {
-        throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
-    }
-
-    int height = settings["window"]["height"].get<int>();
-    int width = settings["window"]["width"].get<int>();
-        
-    int selectedIndex = 0;
-
-    applyChangesButton.setPosition(sf::Vector2f((width - 200) / 2.f, 300));
-    applyChangesButton.setFillColor(sf::Color::Green);
-    applyChangesButton.setOutlineThickness(2);
-
-    sf::Vector2f buttonPos = applyChangesButton.getPosition();
-    sf::Vector2f buttonSize = applyChangesButton.getSize();
-    buttonTextApplyChanges.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextApplyChanges.setFillColor(sf::Color::White);
-    
-
-    sf::FloatRect textBoundsApply = buttonTextApplyChanges.getLocalBounds();
-
-    buttonTextApplyChanges.setOrigin(sf::Vector2f(textBoundsApply.position.x + textBoundsApply.size.x / 2.0f, textBoundsApply.position.y + textBoundsApply.size.y / 2.0f));
-    //buttonTextReset.setOrigin(sf::Vector2f(textBoundsReset.position.x + textBoundsReset.size.x / 2.0f, textBoundsReset.position.y + textBoundsReset.size.y / 2.0f));
-
-
-    for (size_t i = 0; i < boardOptions.size(); ++i) {
-        sf::RectangleShape box(sf::Vector2f(200, 30));
-        if (i == selectedIndex) {
-            box.setFillColor(sf::Color(100, 100, 200)); 
-        } else {
-            box.setFillColor(sf::Color(150, 150, 250));
-        }
-        box.setPosition(sf::Vector2f((width - 200) / 2.f, 80 + i * 30)); 
-        optionBoxes.push_back(box);
-
-        sf::Text text(font, load_string(boardOptions[i]), 20);
-        text.setFillColor(sf::Color::White);
-        text.setPosition(sf::Vector2f((width - 195) / 2.f, 85 + i * 30));
-        optionTexts.push_back(text);
-    }    
-    
-    
-
-
-    buttonReset.setPosition(sf::Vector2f((width - 200) / 2.f, 400));
-    buttonReset.setFillColor(sf::Color::Green);
-    buttonReset.setOutlineThickness(2);
-
-    
-    buttonBack.setPosition(sf::Vector2f((width - 200) / 2.f, 500));
-    buttonBack.setFillColor(sf::Color::Blue);
-    buttonBack.setOutlineThickness(2);
-
-    
-    
-    sf::FloatRect textBounds = buttonTextBack.getLocalBounds();
-    buttonTextBack.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
-    
-    buttonPos = buttonBack.getPosition();
-    buttonSize = buttonBack.getSize();
-    buttonTextBack.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextBack.setFillColor(sf::Color::White);
-
-    sf::FloatRect textBoundsReset = buttonTextReset.getLocalBounds();
-    buttonTextReset.setOrigin(sf::Vector2f(textBoundsReset.position.x + textBoundsReset.size.x / 2.0f, textBoundsReset.position.y + textBoundsReset.size.y / 2.0f));
-
-    buttonPos = buttonReset.getPosition();
-    buttonSize = buttonReset.getSize();
-    buttonTextReset.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextReset.setFillColor(sf::Color::White);
-       
-    if(!backgroundTexture.loadFromFile(settings["settings_background"].get<std::string>()))
-    {
-        throw std::runtime_error("Failed to load texture file: " + std::string("./images/settings_background.png"));
-    }
-
-    backgroundTexture.setSmooth(true);
-    backgroundSprite.setTexture(backgroundTexture, true);
-
-    sf::Vector2u textureSize = backgroundTexture.getSize();
-
-    float scaleX = static_cast<float>(800) / textureSize.x;
-    float scaleY = static_cast<float>(800) / textureSize.y;
-    backgroundSprite.setScale(sf::Vector2f(scaleX, scaleY));
-
-    sf::Vector2u textureSizeSettings = backgroundTexture.getSize();
-    float scaleXSettings = static_cast<float>(800) / textureSizeSettings.x;
-    float scaleYSettings = static_cast<float>(800) / textureSizeSettings.y;
-    backgroundSprite.setScale(sf::Vector2f(scaleXSettings, scaleYSettings));
-}
 
 chessWin::chessWin(int width,  int height, std::wstring name, const std::string imgPath[12] ) : buttonTextStart(font, load_string(START), 30), buttonTextQuit(font,load_string(QUIT),30), buttonTextSettings(font,load_string(SETTINGS),30),
   backgroundSprite(backgroundTexture), buttonTextEngine(font, load_string(ENGINE), 25), 
@@ -485,7 +166,7 @@ colorSelectionTitle(font, load_string(CHESS), 30)
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open settings file: Settings.json");
     } 
-    nlohmann::json settings;
+   
     file >> settings;
 
     boardWindow.setSX(settings["window"]["width"].get<int>());
@@ -668,6 +349,7 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                     boardWindow.MapPieces();
             }
             else if (buttonSettings.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+                settingsWindow.drawBox();
                 state = GameState::Settings;
             }
             else if (buttonQuit.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
@@ -728,27 +410,28 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                 }
             }
         }
-
     }
-            else if (state == GameState::Settings) {
-                const auto& boxes = settingsWindow.getOptionBoxes();
-                for (size_t i = 0; i < boxes.size(); ++i) {
-                    if (boxes[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                        settingsWindow.setSelectedIndex(i); 
-                        std::cout << "Selected option: " << i << std::endl;
-                        break;
-                    }
+    else if (state == GameState::Settings) {
+        const auto& boxes = settingsWindow.getOptionBoxes();
+            for (size_t i = 0; i < boxes.size(); ++i) {
+                if (boxes[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+                    settingsWindow.getOptionBoxes()[settings["UserOptions"]["board_style_index"].get<int>()].setFillColor(sf::Color(150, 150, 250)); 
+                    settingsWindow.setSelectedIndex(i); 
+                    settingsWindow.getOptionBoxes()[i].setFillColor(sf::Color(100, 100, 200)); 
+                    settings["UserOptions"]["board_style"] = settingsWindow.getOptionTexts()[i].getString().toAnsiString();
+                    settings["UserOptions"]["board_style_index"] = i;
+                    settingsWindow.setSelectedText(settingsWindow.getOptionTexts()[i]);
+                    break;
+               }
+            }
+            if (settingsWindow.getApplyChangesButton().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+                std::ofstream file("Settings.json");
+                if (!file.is_open()) {
+                    throw std::runtime_error("Failed to open settings file: Settings.json");
                 }
-
-                
-                const auto& texts = settingsWindow.getOptionTexts();
-                for (size_t i = 0; i < texts.size(); ++i) {
-                    if (texts[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y)) ) {
-                        settingsWindow.setSelectedText(texts[i]);
-                        std::cout << "Selected option text: " << texts[i].getString().toAnsiString() << std::endl;
-                        break;
-                    }
-                }
+                file << settings.dump(4);
+                file.close();
+            }
             if (settingsWindow.getButtonBack().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::StartScreen;
             }
@@ -981,11 +664,9 @@ void chessWin::drawVictoryWindow(Figure::Colors turn)
 
         }
         Victorywindow.clear();
-
         Victorywindow.draw(text);
         Victorywindow.draw(button);
         Victorywindow.draw(buttonText);
-
         Victorywindow.display();
     }
 }
