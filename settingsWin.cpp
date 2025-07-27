@@ -40,8 +40,6 @@ applyChangesButton(sf::Vector2f(200, 60)), buttonTextApplyChanges(font, load_str
 
     buttonTextApplyChanges.setOrigin(sf::Vector2f(textBoundsApply.position.x + textBoundsApply.size.x / 2.0f, textBoundsApply.position.y + textBoundsApply.size.y / 2.0f));
     
-
-
     drawBox();    
 
 
@@ -100,6 +98,7 @@ void settingsWin::drawBox() {
     
     file >> settings;
     int index  = settings["UserOptions"]["board_style_index"];
+    
 
     for (size_t i = 0; i < boardOptions.size(); ++i) {
         sf::RectangleShape box(sf::Vector2f(200, 30));

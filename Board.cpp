@@ -590,6 +590,7 @@ bool chessBoard::playMove(move req, std::array<int,4>& replace, bool& end, bool&
         return false;
     }
 
+    isKingInCheck(tempBoard, (turn == Figure::white) ? Figure::black : Figure::white) ?  opponentKingInCheck = true : opponentKingInCheck = false;
     
     chessBoard = tempBoard;
 

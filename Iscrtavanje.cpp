@@ -1,6 +1,7 @@
 ﻿#include "Iscrtavanje.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "Board.h"
 #include <sys/select.h>
 #include <nlohmann/json.hpp> 
@@ -31,60 +32,24 @@ void chessWin::handleMove(move m, std::array<int,4> replace, bool& end, bool rot
     boardWindow.MapPieces(m);
     if (rotation) {
         move m2(Point(replace[0], replace[1]), Point(replace[2], replace[3]));
+        castlingSound.play();
         boardWindow.MapPieces(m2);
     }
     if (passant) {
         boardWindow.RemovePieceAt(enPassantPawn);
     }
     if (end) {
+        endSound.play();
         DrawSquares();
         DrawPieces();
         win.display();
         drawVictoryWindow(cBoard.turn);
     } else {
         cBoard.nextTurn();
+        cBoard.opponentKingInCheck ? checkSound.play() : moveSound.play();
     }
 }
 
-
-
-
-
-
-
-chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTextQuit(font,load_string(QUIT),30),buttonTextSettings(font,load_string(SETTINGS),30), 
- backgroundSprite(backgroundTexture), buttonTextEngine(font, load_string(ENGINE), 30), 
- buttonTextWhite(font, load_string(CHOOSE_WHITE), 30), buttonTextBlack(font, load_string(CHOOSE_BLACK), 30),
- colorSelectionTitle(font, load_string(COLOR_SELECTION), 30) {}
-
-
-chessPiece::chessPiece() : Sprite(emptyTexture) {}
-
-
-
-
-void chessWin::DrawSquares()
-{
-    for (int i = 0; i < 8; ++i)
-    {
-        for (int j = 0; j < 8; ++j)
-        {
-            win.draw(boardWindow.getBoardSquareAt(i, j));
-        }
-    }
-}
-void chessWin::DrawPieces()
-{
-    int drawnPieces = 0;
-    for (int i = 0; i < 64; ++i)
-    {
-        if (boardWindow.getChessPieceAt(i).draw == 1)
-        {
-            drawnPieces++;
-            win.draw(boardWindow.getChessPieceAt(i).Sprite);
-        }
-    }
-}
 
 
 int setTexture(Figure currFigure)
@@ -155,13 +120,19 @@ int setTexture(Figure currFigure)
 
 
 
-chessWin::chessWin(int width,  int height, std::wstring name, const std::string imgPath[12] ) : buttonTextStart(font, load_string(START), 30), buttonTextQuit(font,load_string(QUIT),30), buttonTextSettings(font,load_string(SETTINGS),30),
-  backgroundSprite(backgroundTexture), buttonTextEngine(font, load_string(ENGINE), 25), 
-  buttonTextWhite(font, load_string(WHITE_WINS), 25), buttonTextBlack(font, load_string(BLACK_WINS), 25),
-colorSelectionTitle(font, load_string(CHESS), 30)
-{
+chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTextQuit(font,load_string(QUIT),30),buttonTextSettings(font,load_string(SETTINGS),30), 
+ backgroundSprite(backgroundTexture), buttonTextEngine(font, load_string(ENGINE), 30), 
+ buttonTextWhite(font, load_string(CHOOSE_WHITE), 30), buttonTextBlack(font, load_string(CHOOSE_BLACK), 30),
+ colorSelectionTitle(font, load_string(COLOR_SELECTION), 30) ,startSound(startBuffer), moveSound(moveBuffer),
+ endSound(endBuffer), checkSound(checkBuffer), castlingSound(castlingBuffer)
+ {
+    sf::SoundBuffer emptyBuffer;
+    startBuffer.loadFromFile("./Sound/Start_Game.wav") ? startSound.setBuffer(startBuffer) : startSound.setBuffer(emptyBuffer);
+    moveBuffer.loadFromFile("./Sound/Move.wav") ? moveSound.setBuffer(moveBuffer) : moveSound.setBuffer(emptyBuffer);
+    endBuffer.loadFromFile("./Sound/Game_over.wav") ? endSound.setBuffer(endBuffer) : endSound.setBuffer(emptyBuffer);
+    checkBuffer.loadFromFile("./Sound/Check.wav") ? checkSound.setBuffer(checkBuffer) : checkSound.setBuffer(emptyBuffer);
+    castlingBuffer.loadFromFile("./Sound/Castling.wav") ? castlingSound.setBuffer(castlingBuffer) : castlingSound.setBuffer(emptyBuffer);
 
-    
     std::ifstream file("Settings.json");
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open settings file: Settings.json");
@@ -177,6 +148,9 @@ colorSelectionTitle(font, load_string(CHESS), 30)
         sf::Color(settings["boards"]["slateDark"][1]["r"].get<int>(), settings["boards"]["slateDark"][1]["g"].get<int>(), settings["boards"]["slateDark"][1]["b"].get<int>())
     });
 
+    width = settings["window"]["width"].get<int>();
+    height = settings["window"]["height"].get<int>();
+    name = settings["app_name"].get<std::string>();
 
     state = GameState::StartScreen;
 
@@ -319,6 +293,35 @@ colorSelectionTitle(font, load_string(CHESS), 30)
 
  win.create(sf::VideoMode(sf::Vector2u(width, height)), name );
     
+ }
+
+
+chessPiece::chessPiece() : Sprite(emptyTexture) {}
+
+
+
+
+void chessWin::DrawSquares()
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        for (int j = 0; j < 8; ++j)
+        {
+            win.draw(boardWindow.getBoardSquareAt(i, j));
+        }
+    }
+}
+void chessWin::DrawPieces()
+{
+    int drawnPieces = 0;
+    for (int i = 0; i < 64; ++i)
+    {
+        if (boardWindow.getChessPieceAt(i).draw == 1)
+        {
+            drawnPieces++;
+            win.draw(boardWindow.getChessPieceAt(i).Sprite);
+        }
+    }
 }
 
 void chessWin::handleResized() {
@@ -345,11 +348,14 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
         if (state == GameState::StartScreen) {
             if (buttonStart.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::ChessBoard;
-
-                    boardWindow.MapPieces();
+                startSound.play();
+                boardWindow.MapPieces();
             }
             else if (buttonSettings.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                settingsWindow.drawBox();
+                settingsWindow.getOptionBoxes()[settingsWindow.getSelectedIndex()].setFillColor(sf::Color(150, 150, 250));
+                settingsWindow.setSelectedIndex(settings["UserOptions"]["board_style_index"].get<int>()); 
+                settingsWindow.getOptionBoxes()[settings["UserOptions"]["board_style_index"].get<int>()].setFillColor(sf::Color(100, 100, 200)); 
+                settingsWindow.setSelectedText(settingsWindow.getOptionTexts()[settings["UserOptions"]["board_style_index"].get<int>()]);
                 state = GameState::Settings;
             }
             else if (buttonQuit.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
@@ -400,10 +406,12 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
                     bool Passant = false;
                     Point enPassantPawn;
                     if (cBoard.playMove(m,replace,end,rotation,enPassantPawn,Passant)) {
+                        
                         handleMove(m, replace, end, rotation, Passant, enPassantPawn);
+
                     }
                     if (playingAgainstAI && !end && isAITurn()) {
-                            playAiMove();
+                        playAiMove();
                     }
                     boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).setFillColor(boardWindow.getFieldColors()[((boardWindow.getSelectedX() + boardWindow.getSelectedY()) % 2)]);
                     boardWindow.setSelectedFigures(0);
@@ -415,11 +423,10 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
         const auto& boxes = settingsWindow.getOptionBoxes();
             for (size_t i = 0; i < boxes.size(); ++i) {
                 if (boxes[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                    settingsWindow.getOptionBoxes()[settings["UserOptions"]["board_style_index"].get<int>()].setFillColor(sf::Color(150, 150, 250)); 
+                    
+                    settingsWindow.getOptionBoxes()[settingsWindow.getSelectedIndex()].setFillColor(sf::Color(150, 150, 250));
                     settingsWindow.setSelectedIndex(i); 
                     settingsWindow.getOptionBoxes()[i].setFillColor(sf::Color(100, 100, 200)); 
-                    settings["UserOptions"]["board_style"] = settingsWindow.getOptionTexts()[i].getString().toAnsiString();
-                    settings["UserOptions"]["board_style_index"] = i;
                     settingsWindow.setSelectedText(settingsWindow.getOptionTexts()[i]);
                     break;
                }
@@ -819,6 +826,7 @@ void chessWin::startGameWithAI(Figure::Colors Color) {
     state = GameState::ChessBoard;
 
     cBoard = chessBoard();
+    startSound.play();
     boardWindow.MapPieces();
   
     if (humanColor == Figure::black) {

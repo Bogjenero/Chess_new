@@ -20,6 +20,7 @@
 				"-lsfml-graphics",
 				"-lsfml-window",
 				"-lsfml-system",
+				"-lsfml-audio",
 				"-lGL",
 				"-ldl",
 				"-pthread"

@@ -42,7 +42,21 @@ class chessWin {
 
 		sf::RenderWindow win; 
 		
-		
+		sf::SoundBuffer startBuffer;
+		sf::Sound startSound;
+
+		sf::SoundBuffer moveBuffer;
+		sf::Sound moveSound;
+
+		sf::SoundBuffer endBuffer;
+		sf::Sound endSound;
+
+		sf::SoundBuffer checkBuffer;
+		sf::Sound checkSound;
+
+		sf::SoundBuffer castlingBuffer;
+		sf::Sound castlingSound;
+
 		sf::RectangleShape buttonStart; // button
 		sf::Text buttonTextStart;
 		
@@ -69,6 +83,10 @@ class chessWin {
 		GameState state;
 		Strings stringID; // ID stringa
     
+		int width;
+		int height;
+		std::string name;
+
 		bool playingAgainstAI = false; 
 		Figure::Colors humanColor = Figure::white; 
 		
@@ -89,7 +107,7 @@ class chessWin {
 	public:
 		chessBoard cBoard; //šahovska ploča
 		bool Update();// rukuje događajima koji su izvedeni na prozoru
-		chessWin( int width, int height, std::wstring name, const std::string imgPath[12]); 
+		//chessWin( int width, int height, std::wstring name, const std::string imgPath[12]); 
 		chessWin();			
 		void startGameWithAI(Figure::Colors humanColor);
 		

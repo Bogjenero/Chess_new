@@ -37,31 +37,22 @@ int main()
 								"./images/Bishop.png",
 								"./images/King.png",
 								"./images/Queen.png",
-								
-								//"./images/Pieces/Default/bp.png",
-								//"./images/Pieces/Default/br.png",				
-								//"./images/Pieces/Default/wb.png",
-								//"./images/Pieces/Default/wk.png",
-								//"./images/Pieces/Default/wq.png",
-								/*"./images/Pieces/Default/bp.png",
-								"./images/Pieces/Default/br.png",
-								"./images/Pieces/Default/bn.png",
-								"./images/Pieces/Default/bb.png",
-								"./images/Pieces/Default/bk.png",
-								"./images/Pieces/Default/bq.png"*/ };
+								};
 
 
-	chessWin temp;
-	chessWin window(800, 800, load_string(CHESS), defaultTheme);
+	//chessWin temp;
+	//chessWin window(800, 800, load_string(CHESS), defaultTheme);
+	chessWin window;
 	StockFish stockfish;
 
-	while (window.Update())
-	{
+	while (window.Update()) {
+		
+	}
+	
 	
 	
 
-	}
-	//ImGui::SFML::Shutdown();
+	
 	return 0;
 }
 

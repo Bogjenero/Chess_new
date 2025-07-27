@@ -71,8 +71,10 @@ private:
     bool isCheckmate(const board& b, Figure::Colors turn);
     bool enPassantPossible = false;
     Point enPassantTarget;
+    
     Point enPassantPawn;
 public:
+    bool opponentKingInCheck = false; // provjerava je li protivnički kralj u šahu
     bool wKing_moved = false, bKing_moved = false, wRook1_moved = false, wRook2_moved = false, bRook1_moved = false, bRook2_moved = false;
     Figure::Colors turn = Figure::white;
     board chessBoard;
