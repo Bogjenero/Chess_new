@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <limits.h>
 
-
+using namespace sf;
 
 // Definition for RGBColor
 struct RGBColor {
@@ -18,7 +18,7 @@ struct RGBColor {
     int b;
 };
 
-sf::Texture emptyTexture; 
+Texture emptyTexture;
 
 void from_json(const json& j, RGBColor& color) {
     j.at("r").get_to(color.r);
@@ -126,7 +126,7 @@ chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTex
  colorSelectionTitle(font, load_string(COLOR_SELECTION), 30) ,startSound(startBuffer), moveSound(moveBuffer),
  endSound(endBuffer), checkSound(checkBuffer), castlingSound(castlingBuffer)
  {
-    sf::SoundBuffer emptyBuffer;
+    SoundBuffer emptyBuffer;
     startBuffer.loadFromFile("./Sound/Start_Game.wav") ? startSound.setBuffer(startBuffer) : startSound.setBuffer(emptyBuffer);
     moveBuffer.loadFromFile("./Sound/Move.wav") ? moveSound.setBuffer(moveBuffer) : moveSound.setBuffer(emptyBuffer);
     endBuffer.loadFromFile("./Sound/Game_over.wav") ? endSound.setBuffer(endBuffer) : endSound.setBuffer(emptyBuffer);
@@ -143,9 +143,11 @@ chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTex
     boardWindow.setSX(settings["window"]["width"].get<int>());
     boardWindow.setSY(settings["window"]["height"].get<int>());
 
+    std::string boardStyle = settings["UserOptions"]["board_style"].get<std::string>();
+
     boardWindow.setFieldColors({
-        sf::Color(settings["boards"]["slateDark"][0]["r"].get<int>(), settings["boards"]["slateDark"][0]["g"].get<int>(), settings["boards"]["slateDark"][0]["b"].get<int>()),
-        sf::Color(settings["boards"]["slateDark"][1]["r"].get<int>(), settings["boards"]["slateDark"][1]["g"].get<int>(), settings["boards"]["slateDark"][1]["b"].get<int>())
+        Color(settings["boards"][boardStyle][0]["r"].get<int>(), settings["boards"][boardStyle][0]["g"].get<int>(), settings["boards"][boardStyle][0]["b"].get<int>()),
+        Color(settings["boards"][boardStyle][1]["r"].get<int>(), settings["boards"][boardStyle][1]["g"].get<int>(), settings["boards"][boardStyle][1]["b"].get<int>())
     });
 
     width = settings["window"]["width"].get<int>();
@@ -157,69 +159,69 @@ chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTex
     boardWindow.setHolderPosition(settings["window"]["width"].get<int>() / 2 - settings["window"]["height"].get<int>() / 2, 0);
     boardWindow.setHolderSize(settings["window"]["height"].get<int>(), settings["window"]["height"].get<int>());
 
-    buttonStart.setSize(sf::Vector2f(200, 60));
-    buttonStart.setPosition(sf::Vector2f((800 - 200) / 2.f, 100));
-    buttonStart.setFillColor(sf::Color::Blue);
+    buttonStart.setSize(Vector2f(200, 60));
+    buttonStart.setPosition(Vector2f((800 - 200) / 2.f, 100));
+    buttonStart.setFillColor(Color::Blue);
     buttonStart.setOutlineThickness(2); 
-    
-    buttonEngine.setSize(sf::Vector2f(200, 60));
-    buttonEngine.setPosition(sf::Vector2f((800 - 200) / 2.f, 200));
-    buttonEngine.setFillColor(sf::Color::Blue);
+
+    buttonEngine.setSize(Vector2f(200, 60));
+    buttonEngine.setPosition(Vector2f((800 - 200) / 2.f, 200));
+    buttonEngine.setFillColor(Color::Blue);
     buttonEngine.setOutlineThickness(2);
 
 
-    buttonSettings.setSize(sf::Vector2f(200, 60));
-    buttonSettings.setPosition(sf::Vector2f((800 - 200) / 2.f, 300));
-    buttonSettings.setFillColor(sf::Color::Green);
+    buttonSettings.setSize(Vector2f(200, 60));
+    buttonSettings.setPosition(Vector2f((800 - 200) / 2.f, 300));
+    buttonSettings.setFillColor(Color::Green);
     buttonSettings.setOutlineThickness(2);
 
 
-    buttonQuit.setSize(sf::Vector2f(200, 60));
-    buttonQuit.setPosition(sf::Vector2f((800 - 200) / 2.f, 400));
-    buttonQuit.setFillColor(sf::Color::Red);
+    buttonQuit.setSize(Vector2f(200, 60));
+    buttonQuit.setPosition(Vector2f((800 - 200) / 2.f, 400));
+    buttonQuit.setFillColor(Color::Red);
     buttonQuit.setOutlineThickness(2);
 
     if (!font.openFromFile("arial.ttf")) {
        throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
     }
-    sf::FloatRect textBounds = buttonTextStart.getLocalBounds();
-    buttonTextStart.setOrigin(sf::Vector2f( textBounds.position.x + textBounds.size.x / 2.0f,textBounds.position.y + textBounds.size.y / 2.0f));
-    
-    sf::Vector2f buttonPos = buttonStart.getPosition();
-    sf::Vector2f buttonSize = buttonStart.getSize();
-    buttonTextStart.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f,buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextStart.setFillColor(sf::Color::White);
-    
+    FloatRect textBounds = buttonTextStart.getLocalBounds();
+    buttonTextStart.setOrigin(Vector2f( textBounds.position.x + textBounds.size.x / 2.0f,textBounds.position.y + textBounds.size.y / 2.0f));
+
+    Vector2f buttonPos = buttonStart.getPosition();
+    Vector2f buttonSize = buttonStart.getSize();
+    buttonTextStart.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f,buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextStart.setFillColor(Color::White);
+
     textBounds = buttonTextQuit.getLocalBounds();
-    buttonTextQuit.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
+    buttonTextQuit.setOrigin(Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
 
     buttonPos = buttonQuit.getPosition();
     buttonSize = buttonQuit.getSize();
-    buttonTextQuit.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextQuit.setFillColor(sf::Color::White);
+    buttonTextQuit.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextQuit.setFillColor(Color::White);
 
     textBounds = buttonTextSettings.getLocalBounds();
-    buttonTextSettings.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
+    buttonTextSettings.setOrigin(Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
 
     buttonPos = buttonSettings.getPosition();
     buttonSize = buttonSettings.getSize();
-    buttonTextSettings.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextSettings.setFillColor(sf::Color::White);
-    
+    buttonTextSettings.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextSettings.setFillColor(Color::White);
+
     buttonPos = buttonEngine.getPosition();
     buttonSize = buttonEngine.getSize();
-    buttonTextEngine.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f,buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextEngine.setFillColor(sf::Color::White);
+    buttonTextEngine.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f,buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextEngine.setFillColor(Color::White);
 
     textBounds = buttonTextEngine.getLocalBounds();
-    buttonTextEngine.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
+    buttonTextEngine.setOrigin(Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
 
     boardWindow.getBoardTexture().setSmooth(true);
     boardWindow.setBoardSpriteTexture(boardWindow.getBoardTexture());
 
-    boardWindow.getBoardSprite().setPosition(sf::Vector2f(boardWindow.getHolderX(), boardWindow.getHolderY()));
-    boardWindow.setBoardSpritePosition(sf::Vector2f(boardWindow.getHolderX(), boardWindow.getHolderY()));
-    boardWindow.boardSpriteSetScale(sf::Vector2f(
+    boardWindow.getBoardSprite().setPosition(Vector2f(boardWindow.getHolderX(), boardWindow.getHolderY()));
+    boardWindow.setBoardSpritePosition(Vector2f(boardWindow.getHolderX(), boardWindow.getHolderY()));
+    boardWindow.boardSpriteSetScale(Vector2f(
         boardWindow.getSX() / boardWindow.getBoardSprite().getLocalBounds().size.x,
         boardWindow.getSY() / boardWindow.getBoardSprite().getLocalBounds().size.y
     ));
@@ -232,18 +234,17 @@ chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTex
 
     backgroundTexture.setSmooth(true);
     backgroundSprite.setTexture(backgroundTexture, true);
-    
-    sf::Vector2u textureSize = backgroundTexture.getSize();
-    
+
+    Vector2u textureSize = backgroundTexture.getSize();
 
     float scaleX = static_cast<float>(800) / textureSize.x;
     float scaleY = static_cast<float>(800) / textureSize.y;
-    backgroundSprite.setScale(sf::Vector2f(scaleX, scaleY));
+    backgroundSprite.setScale(Vector2f(scaleX, scaleY));
 
-    sf::Vector2u textureSizeSettings = backgroundTexture.getSize();
+    Vector2u textureSizeSettings = backgroundTexture.getSize();
     float scaleXSettings = static_cast<float>(800) / textureSizeSettings.x;
     float scaleYSettings = static_cast<float>(800) / textureSizeSettings.y;
-    backgroundSprite.setScale(sf::Vector2f(scaleXSettings, scaleYSettings));
+    backgroundSprite.setScale(Vector2f(scaleXSettings, scaleYSettings));
 
 
     
@@ -281,7 +282,7 @@ chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTex
             {
                     int textureIndex = setTexture(currFigure);
                     if (textureIndex >= 0 && textureIndex < 12) {
-                        boardWindow.setChessPieceTexture(index, boardWindow.getPieceTexture(textureIndex)); // This should work better now
+                        boardWindow.setChessPieceTexture(index, boardWindow.getPieceTexture(textureIndex)); 
                         boardWindow.setChessPieceDraw(index, 1);
                     }
             }
@@ -291,7 +292,7 @@ chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTex
     boardWindow.MapPieces();
     
 
- win.create(sf::VideoMode(sf::Vector2u(width, height)), name );
+ win.create(VideoMode(Vector2u(width, height)), name );
     
  }
 
@@ -327,7 +328,7 @@ void chessWin::DrawPieces()
 void chessWin::handleResized() {
     boardWindow.setSX(win.getSize().x);
     boardWindow.setSY(win.getSize().y);
-    win.setView(sf::View(sf::FloatRect(sf::Vector2f(0,0), sf::Vector2f( boardWindow.getSX(), boardWindow.getSY()) )));
+    win.setView(View(FloatRect(Vector2f(0,0), Vector2f( boardWindow.getSX(), boardWindow.getSY()) )));
     if (boardWindow.getSX() > boardWindow.getSY()) {
         boardWindow.setHolderSize(boardWindow.getSX(), boardWindow.getSY());
         boardWindow.setHolderPosition(boardWindow.getSX() / 2 - boardWindow.getSY() / 2,0);
@@ -340,29 +341,40 @@ void chessWin::handleResized() {
     boardWindow.FitToHolder();
 }
 
-void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
-    const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>();
-  
-    if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-        sf::Vector2i mousePos = sf::Mouse::getPosition(win);
+void chessWin::handleMouseButtonPressed(std::optional<Event>& event) {
+    const auto* mouseButtonPressed = event->getIf<Event::MouseButtonPressed>();
+
+    if (mouseButtonPressed->button == Mouse::Button::Left) {
+        Vector2i mousePos = Mouse::getPosition(win);
         if (state == GameState::StartScreen) {
-            if (buttonStart.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+            if (buttonStart.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::ChessBoard;
+                std::string boardStyle = settings["UserOptions"]["board_style"].get<std::string>();
+                boardWindow.setFieldColors({
+                Color(settings["boards"][boardStyle][0]["r"].get<int>(), settings["boards"][boardStyle][0]["g"].get<int>(), settings["boards"][boardStyle][0]["b"].get<int>()),
+                Color(settings["boards"][boardStyle][1]["r"].get<int>(), settings["boards"][boardStyle][1]["g"].get<int>(), settings["boards"][boardStyle][1]["b"].get<int>())
+                });
+                for (int i = 0; i < 8; ++i) {
+                    for (int j = 0; j < 8; ++j) {
+                            int colorIndex = (i + j) % 2;
+                            boardWindow.getBoardSquareAt(i, j).setFillColor(boardWindow.getFieldColors()[colorIndex]);
+                        }
+                    }
                 startSound.play();
                 boardWindow.MapPieces();
             }
-            else if (buttonSettings.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                settingsWindow.getOptionBoxes()[settingsWindow.getSelectedIndex()].setFillColor(sf::Color(150, 150, 250));
-                settingsWindow.setSelectedIndex(settings["UserOptions"]["board_style_index"].get<int>()); 
-                settingsWindow.getOptionBoxes()[settings["UserOptions"]["board_style_index"].get<int>()].setFillColor(sf::Color(100, 100, 200)); 
+            else if (buttonSettings.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                settingsWindow.getOptionBoxes()[settingsWindow.getSelectedIndex()].setFillColor(Color(150, 150, 250));
+                settingsWindow.setSelectedIndex(settings["UserOptions"]["board_style_index"].get<int>());
+                settingsWindow.getOptionBoxes()[settings["UserOptions"]["board_style_index"].get<int>()].setFillColor(Color(100, 100, 200));
                 settingsWindow.setSelectedText(settingsWindow.getOptionTexts()[settings["UserOptions"]["board_style_index"].get<int>()]);
                 state = GameState::Settings;
             }
-            else if (buttonQuit.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+            else if (buttonQuit.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 win.close();
             }
-            else if (buttonEngine.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                state = GameState::ColorSelection;                
+            else if (buttonEngine.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                state = GameState::ColorSelection;
             }
 
         }
@@ -422,44 +434,47 @@ void chessWin::handleMouseButtonPressed(std::optional<sf::Event>& event) {
     else if (state == GameState::Settings) {
         const auto& boxes = settingsWindow.getOptionBoxes();
             for (size_t i = 0; i < boxes.size(); ++i) {
-                if (boxes[i].getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                    
-                    settingsWindow.getOptionBoxes()[settingsWindow.getSelectedIndex()].setFillColor(sf::Color(150, 150, 250));
-                    settingsWindow.setSelectedIndex(i); 
-                    settingsWindow.getOptionBoxes()[i].setFillColor(sf::Color(100, 100, 200)); 
+                if (boxes[i].getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    settingsWindow.getOptionBoxes()[settingsWindow.getSelectedIndex()].setFillColor(Color(150, 150, 250));
+                    settingsWindow.setSelectedIndex(i);
+                    settingsWindow.getOptionBoxes()[i].setFillColor(Color(100, 100, 200));
                     settingsWindow.setSelectedText(settingsWindow.getOptionTexts()[i]);
                     break;
                }
             }
-            if (settingsWindow.getApplyChangesButton().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+            if (settingsWindow.getApplyChangesButton().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 std::ofstream file("Settings.json");
                 if (!file.is_open()) {
                     throw std::runtime_error("Failed to open settings file: Settings.json");
                 }
-                file << settings.dump(4);
-                file.close();
+                else {
+                    settings["UserOptions"]["board_style"] = settingsWindow.getSelectedText().getString();
+                    settings["UserOptions"]["board_style_index"] = settingsWindow.getSelectedIndex();
+
+                    file << settings.dump(4);
+                    file.close();    
+                }
             }
-            if (settingsWindow.getButtonBack().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+            if (settingsWindow.getButtonBack().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::StartScreen;
             }
-            else if (settingsWindow.getButtonReset().getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+            else if (settingsWindow.getButtonReset().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 //resetGame();
                 // ovjde moram napraviti da postavke budu resetirane
             }
         }
        else if (state == GameState::ColorSelection) {
-                if (buttonWhite.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                    startGameWithAI(Figure::white);  
+                if (buttonWhite.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    startGameWithAI(Figure::white);
                 }
-                else if (buttonBlack.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
-                    startGameWithAI(Figure::black);  
+                else if (buttonBlack.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    startGameWithAI(Figure::black);
                 }
         }
-    else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
-
+    else if (mouseButtonPressed->button == Mouse::Button::Right) {
         boardWindow.getBoardSquareAt(boardWindow.getSelectedX(), boardWindow.getSelectedY()).setFillColor(boardWindow.getFieldColors()[((boardWindow.getSelectedX() + boardWindow.getSelectedY()) % 2)]);
         boardWindow.setSelectedFigures(0);
-    }
+        }
     }
 }
 void chessWin::handleClosed() {
@@ -524,53 +539,51 @@ void chessWin::resetGame() {
 
 void chessWin::showEndWindow()
 {
-    sf::RenderWindow endWindow(sf::VideoMode(sf::Vector2u(400, 200)), load_string(ENDWINDOW));
-  
+    RenderWindow endWindow(VideoMode(Vector2u(400, 200)), load_string(ENDWINDOW));
+
     win.setActive(false);
 
-    sf::RectangleShape button(sf::Vector2f(250, 50));
-    button.setFillColor(sf::Color::Green);
-    button.setPosition(sf::Vector2f(100, 75));
+    RectangleShape button(Vector2f(250, 50));
+    button.setFillColor(Color::Green);
+    button.setPosition(Vector2f(100, 75));
 
-    sf::Font font;
+    Font font;
     if (!font.openFromFile("arial.ttf")) 
     {
         throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
     }
 
-    sf::Text buttonText(font,load_string(FINISH), 24);
-    buttonText.setFillColor(sf::Color::White);
-    buttonText.setPosition(sf::Vector2f(150, 85)); 
-       
+    Text buttonText(font,load_string(FINISH), 24);
+    buttonText.setFillColor(Color::White);
+    buttonText.setPosition(Vector2f(150, 85));
+
     while (endWindow.isOpen())
     {
-        std::optional<sf::Event> event;
+        std::optional<Event> event;
        
         while (event = endWindow.pollEvent())
         {
-            if(event->is<sf::Event::Closed>())
+            if(event->is<Event::Closed>())
             {
                 endWindow.close();
             }
-            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
+            else if (const auto* mouseButtonPressed = event->getIf<Event::MouseButtonPressed>())
             {
-                if(mouseButtonPressed->button == sf::Mouse::Button::Left)
+                if(mouseButtonPressed->button == Mouse::Button::Left)
                 {
-                    sf::Vector2i mousePos = sf::Mouse::getPosition(endWindow);
-                    if (button.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y) )) {
+                    Vector2i mousePos = Mouse::getPosition(endWindow);
+                    if (button.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y) )) {
                         
                         win.close();
 
-                        
                         resetGame();
 
-                       
                         state = GameState::StartScreen;
                         if(cBoard.turn == Figure::black)
 						{
 							cBoard.nextTurn();
 						}   
-                        win.create(sf::VideoMode(sf::Vector2u(boardWindow.getSX(), boardWindow.getSY())), load_string(CHESS));
+                        win.create(VideoMode(Vector2u(boardWindow.getSX(), boardWindow.getSY())), load_string(CHESS));
 
                         boardWindow.FitToHolder();
                         boardWindow.MapPieces();
@@ -599,57 +612,57 @@ void chessWin::showEndWindow()
 
 void chessWin::drawVictoryWindow(Figure::Colors turn) 
 {
-    sf::RenderWindow Victorywindow(sf::VideoMode(sf::Vector2u(400, 200)), load_string(VICTORY));
-    sf::Font font;
+    RenderWindow Victorywindow(VideoMode(Vector2u(400, 200)), load_string(VICTORY));
+    Font font;
     if (!font.openFromFile("arial.ttf")) {
         throw std::runtime_error("Failed to load texture file: " + std::string("arial.ttf"));
     }
-    sf::Text text(font, load_string((turn == Figure::white) ? WHITE_WINS : BLACK_WINS), 24);
-    text.setFillColor(sf::Color::White);
-    text.setStyle(sf::Text::Bold);
+    Text text(font, load_string((turn == Figure::white) ? WHITE_WINS : BLACK_WINS), 24);
+    text.setFillColor(Color::White);
+    text.setStyle(Text::Bold);
 
-    sf::FloatRect textRect = text.getLocalBounds();
-    text.setOrigin(sf::Vector2f(
+    FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(Vector2f(
         textRect.position.x + textRect.size.x / 2.0f,
         textRect.position.y + textRect.size.y / 2.0f)
     );
 
     text.setPosition(
-        sf::Vector2f(Victorywindow.getSize().x / 2.0f,
+        Vector2f(Victorywindow.getSize().x / 2.0f,
         Victorywindow.getSize().y / 2.0f - 20.0f)
     );
 
-    sf::RectangleShape button(sf::Vector2f(100, 50));
-    button.setFillColor(sf::Color::Green);
-    button.setOutlineColor(sf::Color::Black);
+    RectangleShape button(Vector2f(100, 50));
+    button.setFillColor(Color::Green);
+    button.setOutlineColor(Color::Black);
     button.setOutlineThickness(2);
-    button.setPosition(sf::Vector2f(Victorywindow.getSize().x / 2.0f - 50, Victorywindow.getSize().y / 2.0f + 20));
+    button.setPosition(Vector2f(Victorywindow.getSize().x / 2.0f - 50, Victorywindow.getSize().y / 2.0f + 20));
 
-    sf::Text buttonText(font, load_string(OK), 18);
-    buttonText.setFillColor(sf::Color::Black);
-    buttonText.setStyle(sf::Text::Bold);
+    Text buttonText(font, load_string(OK), 18);
+    buttonText.setFillColor(Color::Black);
+    buttonText.setStyle(Text::Bold);
 
     
-    buttonText.setOrigin(sf::Vector2f(
+    buttonText.setOrigin(Vector2f(
                         buttonText.getLocalBounds().position.x + buttonText.getLocalBounds().size.x / 2.0f,
                         buttonText.getLocalBounds().position.x + buttonText.getLocalBounds().size.y / 2.0f));
-    
-    buttonText.setPosition(sf::Vector2f(
+
+    buttonText.setPosition(Vector2f(
                             button.getPosition().x + button.getSize().x / 2.0f,
                             button.getPosition().y + button.getSize().y / 2.0f));
 
     while (Victorywindow.isOpen()) {
-        std::optional<sf::Event> event;
+        std::optional<Event> event;
         while (auto eventOpt =  Victorywindow.pollEvent()) {
             event = eventOpt;
-            if (event->is<sf::Event::Closed>())
+            if (event->is<Event::Closed>())
                 Victorywindow.close();
-            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
+            else if (const auto* mouseButtonPressed = event->getIf<Event::MouseButtonPressed>())
             {
-                if (mouseButtonPressed->button == sf::Mouse::Button::Left)
+                if (mouseButtonPressed->button == Mouse::Button::Left)
                 {
-                    sf::Vector2i mousePos = sf::Mouse::getPosition(Victorywindow);
-                    if (button.getGlobalBounds().contains(sf::Vector2f(mousePos.x, mousePos.y))) {
+                    Vector2i mousePos = Mouse::getPosition(Victorywindow);
+                    if (button.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
 
                         win.close();
 
@@ -657,7 +670,7 @@ void chessWin::drawVictoryWindow(Figure::Colors turn)
                         resetGame();
 
                         state = GameState::StartScreen;
-                        win.create(sf::VideoMode(sf::Vector2u(boardWindow.getSX(),  boardWindow.getSY())), load_string(CHESS));
+                        win.create(VideoMode(Vector2u(boardWindow.getSX(),  boardWindow.getSY())), load_string(CHESS));
 
                         boardWindow.FitToHolder();
                         boardWindow.MapPieces();
@@ -679,17 +692,17 @@ void chessWin::drawVictoryWindow(Figure::Colors turn)
 }
 
 bool chessWin::Update() {
-    std::optional<sf::Event> event;
-    
-    auto cursorArrow = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow);
-    auto cursorHand = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand);
-    
-    sf::Cursor handCursor = std::move(*cursorHand);
-    sf::Cursor arrowCursor = std::move(*cursorArrow);
+    std::optional<Event> event;
+
+    auto cursorArrow = Cursor::createFromSystem(Cursor::Type::Arrow);
+    auto cursorHand = Cursor::createFromSystem(Cursor::Type::Hand);
+
+    Cursor handCursor = std::move(*cursorHand);
+    Cursor arrowCursor = std::move(*cursorArrow);
     while (event = win.pollEvent()) {
-        
-        sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(win));
-        
+
+        Vector2f mousePos = static_cast<Vector2f>(Mouse::getPosition(win));
+
         if(state == GameState::StartScreen && (buttonStart.getGlobalBounds().contains(mousePos) || buttonQuit.getGlobalBounds().contains(mousePos)  || buttonSettings.getGlobalBounds().contains(mousePos) || buttonEngine.getGlobalBounds().contains(mousePos)))
         {
             
@@ -732,19 +745,19 @@ bool chessWin::Update() {
         {
             win.setMouseCursor(handCursor);
         }
-        if (event->is<sf::Event::Resized>()) {
+        if (event->is<Event::Resized>()) {
             //handleResized();
         }
-        else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+        else if (auto* mousePressed = event->getIf<Event::MouseButtonPressed>()) {
             handleMouseButtonPressed(event);
         }   
 
-        else if(event->is<sf::Event::Closed>()) {
+        else if(event->is<Event::Closed>()) {
             handleClosed();
         }
 
-        else if (auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-        if (keyPressed->code == sf::Keyboard::Key::Escape && state == GameState::ChessBoard) {
+        else if (auto* keyPressed = event->getIf<Event::KeyPressed>()) {
+        if (keyPressed->code == Keyboard::Key::Escape && state == GameState::ChessBoard) {
             showEndWindow();
         }
     }
@@ -768,6 +781,9 @@ bool chessWin::Update() {
         DrawPieces();
     }
     else if (state == GameState::Settings) {
+        win.draw(settingsWindow.getCheckBox());
+        win.draw(settingsWindow.getCheck());
+        win.draw(settingsWindow.getMuteText());
         win.draw(settingsWindow.getBackgroundSprite());
         win.draw(settingsWindow.getApplyChangesButton());
         win.draw(settingsWindow.getButtonTextApplyChanges());
@@ -793,30 +809,30 @@ bool chessWin::Update() {
 void chessWin::showColorSelection() {
  
 
-    buttonWhite.setSize(sf::Vector2f(150, 80));
-    buttonWhite.setPosition(sf::Vector2f(200, 300));
-    buttonWhite.setFillColor(sf::Color::White);
-    buttonWhite.setOutlineColor(sf::Color::Black);
+    buttonWhite.setSize(Vector2f(150, 80));
+    buttonWhite.setPosition(Vector2f(200, 300));
+    buttonWhite.setFillColor(Color::White);
+    buttonWhite.setOutlineColor(Color::Black);
     buttonWhite.setOutlineThickness(3);
-    
-    buttonBlack.setSize(sf::Vector2f(150, 80));
-    buttonBlack.setPosition(sf::Vector2f(450, 300));
-    buttonBlack.setFillColor(sf::Color::Black);
-    buttonBlack.setOutlineColor(sf::Color::White);
-    buttonBlack.setOutlineThickness(3);
-    
- 
-    buttonTextWhite = sf::Text(font,load_string(CHOOSE_WHITE), 20);
-    buttonTextWhite.setFillColor(sf::Color::Black);
-    buttonTextWhite.setPosition(sf::Vector2f(210, 330));
 
-    buttonTextBlack = sf::Text(font, load_string(CHOOSE_BLACK), 20);
-    buttonTextBlack.setFillColor(sf::Color::White);
-    buttonTextBlack.setPosition(sf::Vector2f(460, 330));
-    
-    colorSelectionTitle = sf::Text(font, L"Choose Your Color", 30);
-    colorSelectionTitle.setFillColor(sf::Color::White);
-    colorSelectionTitle.setPosition(sf::Vector2f(250, 200));
+    buttonBlack.setSize(Vector2f(150, 80));
+    buttonBlack.setPosition(Vector2f(450, 300));
+    buttonBlack.setFillColor(Color::Black);
+    buttonBlack.setOutlineColor(Color::White);
+    buttonBlack.setOutlineThickness(3);
+
+
+    buttonTextWhite = Text(font,load_string(CHOOSE_WHITE), 20);
+    buttonTextWhite.setFillColor(Color::Black);
+    buttonTextWhite.setPosition(Vector2f(210, 330));
+
+    buttonTextBlack = Text(font, load_string(CHOOSE_BLACK), 20);
+    buttonTextBlack.setFillColor(Color::White);
+    buttonTextBlack.setPosition(Vector2f(460, 330));
+
+    colorSelectionTitle = Text(font, L"Choose Your Color", 30);
+    colorSelectionTitle.setFillColor(Color::White);
+    colorSelectionTitle.setPosition(Vector2f(250, 200));
 }
 
 
@@ -877,9 +893,9 @@ bool chessWin::isAITurn() const {
 
 
 void chessWin::playAiMove(){
-                               
-    sf::sleep(sf::milliseconds(200));
-                                                                             
+
+    sleep(milliseconds(200));
+
     std::string currentFEN = cBoard.boardToFEN(); //Pretvaram ploču u FEN zapis
                                 
     std::string bestMove = stockfish.getBestMove(currentFEN); //Stockfish vraća najbolji potez u algebarskoj notaciji
@@ -926,7 +942,7 @@ void chessWin::playAiMove(){
 void chessWin::selectFigures(int projX, int projY) {
     
     boardWindow.setSelected(projX, projY);
-    boardWindow.getBoardSquareAt(projX, projY).setFillColor(sf::Color::Yellow);
+    boardWindow.getBoardSquareAt(projX, projY).setFillColor(Color::Yellow);
 }
 
 void chessWin::deselectFigures(int projX, int projY) {

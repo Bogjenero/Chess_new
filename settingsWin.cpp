@@ -3,12 +3,14 @@
 #include <stdexcept>
 #include <nlohmann/json.hpp>
 
+using namespace sf;
 
 
 settingsWin::settingsWin() : buttonTextBack(font, load_string(BACK), 30), 
-buttonBack(sf::Vector2f(200, 60)), buttonTextReset(font, load_string(RESET), 30), buttonReset(sf::Vector2f(200, 60)),
-backgroundSprite(backgroundTexture), selectBox(sf::Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30),
-applyChangesButton(sf::Vector2f(200, 60)), buttonTextApplyChanges(font, load_string(APPLY), 30)
+buttonBack(Vector2f(200, 60)), buttonTextReset(font, load_string(RESET), 30), buttonReset(Vector2f(200, 60)),
+backgroundSprite(backgroundTexture), selectBox(Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30),
+applyChangesButton(Vector2f(200, 60)), buttonTextApplyChanges(font, load_string(APPLY), 30), checkBox(Vector2f(20, 20)),
+muteText(font, load_string(MUTE), 20), isChecked(false), selectedIndex(0) 
 {
     std::ifstream file("Settings.json");
     if (!file.is_open()) {
@@ -26,50 +28,63 @@ applyChangesButton(sf::Vector2f(200, 60)), buttonTextApplyChanges(font, load_str
         
     int selectedIndex = 0;
 
-    applyChangesButton.setPosition(sf::Vector2f((width - 200) / 2.f, 300));
-    applyChangesButton.setFillColor(sf::Color::Green);
+    applyChangesButton.setPosition(Vector2f((width - 200) / 2.f, 300));
+    applyChangesButton.setFillColor(Color::Green);
     applyChangesButton.setOutlineThickness(2);
 
-    sf::Vector2f buttonPos = applyChangesButton.getPosition();
-    sf::Vector2f buttonSize = applyChangesButton.getSize();
-    buttonTextApplyChanges.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextApplyChanges.setFillColor(sf::Color::White);
-    
+    Vector2f buttonPos = applyChangesButton.getPosition();
+    Vector2f buttonSize = applyChangesButton.getSize();
+    buttonTextApplyChanges.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextApplyChanges.setFillColor(Color::White);
 
-    sf::FloatRect textBoundsApply = buttonTextApplyChanges.getLocalBounds();
+    FloatRect textBoundsApply = buttonTextApplyChanges.getLocalBounds();
 
-    buttonTextApplyChanges.setOrigin(sf::Vector2f(textBoundsApply.position.x + textBoundsApply.size.x / 2.0f, textBoundsApply.position.y + textBoundsApply.size.y / 2.0f));
-    
+    buttonTextApplyChanges.setOrigin(Vector2f(textBoundsApply.position.x + textBoundsApply.size.x / 2.0f, textBoundsApply.position.y + textBoundsApply.size.y / 2.0f));
+
     drawBox();    
 
+    muteText.setFont(font);
+    muteText.setString("Isključi zvuk");
+    muteText.setCharacterSize(20);
+    muteText.setFillColor(Color::Black);
+    muteText.setPosition(Vector2f(50.f, 30.f));  // Gore levo
 
-    buttonReset.setPosition(sf::Vector2f((width - 200) / 2.f, 400));
-    buttonReset.setFillColor(sf::Color::Green);
+
+    checkBox.setSize({20.f, 20.f});
+    checkBox.setPosition(Vector2f(200.f, 30.f));
+    checkBox.setFillColor(Color::White);
+    checkBox.setOutlineColor(Color::Black);
+    checkBox.setOutlineThickness(2.f);
+
+
+    check.setSize({14.f, 14.f});
+    check.setPosition(Vector2f(203.f, 33.f));  // Malo unutra u odnosu na checkBox
+    check.setFillColor(Color::Green);
+
+    buttonReset.setPosition(Vector2f((width - 200) / 2.f, 400));
+    buttonReset.setFillColor(Color::Green);
     buttonReset.setOutlineThickness(2);
 
-    
-    buttonBack.setPosition(sf::Vector2f((width - 200) / 2.f, 500));
-    buttonBack.setFillColor(sf::Color::Blue);
+    buttonBack.setPosition(Vector2f((width - 200) / 2.f, 500));
+    buttonBack.setFillColor(Color::Blue);
     buttonBack.setOutlineThickness(2);
 
-    
-    
-    sf::FloatRect textBounds = buttonTextBack.getLocalBounds();
-    buttonTextBack.setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
-    
+    FloatRect textBounds = buttonTextBack.getLocalBounds();
+    buttonTextBack.setOrigin(Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
+
     buttonPos = buttonBack.getPosition();
     buttonSize = buttonBack.getSize();
-    buttonTextBack.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextBack.setFillColor(sf::Color::White);
+    buttonTextBack.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextBack.setFillColor(Color::White);
 
-    sf::FloatRect textBoundsReset = buttonTextReset.getLocalBounds();
-    buttonTextReset.setOrigin(sf::Vector2f(textBoundsReset.position.x + textBoundsReset.size.x / 2.0f, textBoundsReset.position.y + textBoundsReset.size.y / 2.0f));
+    FloatRect textBoundsReset = buttonTextReset.getLocalBounds();
+    buttonTextReset.setOrigin(Vector2f(textBoundsReset.position.x + textBoundsReset.size.x / 2.0f, textBoundsReset.position.y + textBoundsReset.size.y / 2.0f));
 
     buttonPos = buttonReset.getPosition();
     buttonSize = buttonReset.getSize();
-    buttonTextReset.setPosition(sf::Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
-    buttonTextReset.setFillColor(sf::Color::White);
-       
+    buttonTextReset.setPosition(Vector2f(buttonPos.x + buttonSize.x / 2.0f, buttonPos.y + buttonSize.y / 2.0f));
+    buttonTextReset.setFillColor(Color::White);
+
     if(!backgroundTexture.loadFromFile(settings["settings_background"].get<std::string>()))
     {
         throw std::runtime_error("Failed to load texture file: " + std::string("./images/settings_background.png"));
@@ -78,16 +93,16 @@ applyChangesButton(sf::Vector2f(200, 60)), buttonTextApplyChanges(font, load_str
     backgroundTexture.setSmooth(true);
     backgroundSprite.setTexture(backgroundTexture, true);
 
-    sf::Vector2u textureSize = backgroundTexture.getSize();
+    Vector2u textureSize = backgroundTexture.getSize();
 
     float scaleX = static_cast<float>(800) / textureSize.x;
     float scaleY = static_cast<float>(800) / textureSize.y;
-    backgroundSprite.setScale(sf::Vector2f(scaleX, scaleY));
+    backgroundSprite.setScale(Vector2f(scaleX, scaleY));
 
     sf::Vector2u textureSizeSettings = backgroundTexture.getSize();
     float scaleXSettings = static_cast<float>(800) / textureSizeSettings.x;
     float scaleYSettings = static_cast<float>(800) / textureSizeSettings.y;
-    backgroundSprite.setScale(sf::Vector2f(scaleXSettings, scaleYSettings));
+    backgroundSprite.setScale(Vector2f(scaleXSettings, scaleYSettings));
 }
 
 void settingsWin::drawBox() {
@@ -101,18 +116,18 @@ void settingsWin::drawBox() {
     
 
     for (size_t i = 0; i < boardOptions.size(); ++i) {
-        sf::RectangleShape box(sf::Vector2f(200, 30));
+        RectangleShape box(Vector2f(200, 30));
         if(index == i) {
-            box.setFillColor(sf::Color(100, 100, 200)); 
+            box.setFillColor(Color(100, 100, 200)); 
         } else {
-            box.setFillColor(sf::Color(150, 150, 250));
+            box.setFillColor(Color(150, 150, 250));
         }
-        box.setPosition(sf::Vector2f((width - 200) / 2.f, 80 + i * 30)); 
+        box.setPosition(Vector2f((width - 200) / 2.f, 80 + i * 30)); 
         optionBoxes.push_back(box);
 
-        sf::Text text(font, load_string(boardOptions[i]), 20);
-        text.setFillColor(sf::Color::White);
-        text.setPosition(sf::Vector2f((width - 195) / 2.f, 85 + i * 30));
+        Text text(font, load_string(boardOptions[i]), 20);
+        text.setFillColor(Color::White);
+        text.setPosition(Vector2f((width - 195) / 2.f, 85 + i * 30));
         optionTexts.push_back(text);
     }
 }    

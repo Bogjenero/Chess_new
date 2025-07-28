@@ -1,7 +1,7 @@
 {
     "UserOptions": {
-        "board_style": "Blue Gray",
-        "board_style_index": 4,
+        "board_style": "blackWhite",
+        "board_style_index": 0,
         "figure_style": "modern",
         "language": "en",
         "music": true,

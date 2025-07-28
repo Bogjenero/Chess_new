@@ -22,13 +22,15 @@ const std::map <Strings, std::wstring> stringMap = {
     { COLOR_SELECTION, L"Color Selection" },
     { CHOOSE_WHITE, L"Play as White" },
     { CHOOSE_BLACK, L"Play as Black" },
-    { BLACK_WHITE, L"Black and White " },
-    { LIGHT_WOOD, L"Light Wood" },
-    { DARK_WOOD, L"Dark Wood" },
-    { BLUE_GRAY, L"Blue Gray" },
-    { GREEN_MARBLE, L"Green Marble" },
-    { SLATE_DARK, L"Slate Dark" },
-    { APPLY, L"Apply Changes" }
+    { BLACK_WHITE, L"blackWhite" },
+    { LIGHT_WOOD, L"lightWood" },
+    { DARK_WOOD, L"darkWood" },
+    { BLUE_GRAY, L"blueGray" },
+    { GREEN_MARBLE, L"greenMarble" },
+    { SLATE_DARK, L"slateDark" },
+    { APPLY, L"applyChanges" },
+    { MUTE, L"Mute" },
+    
 
 };
 

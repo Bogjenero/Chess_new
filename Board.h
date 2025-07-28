@@ -82,5 +82,6 @@ public:
     void nextTurn(); // prebacuje na sljedeći potez
     std::string boardToFEN() const;
     char getPieceChar(const Figure& figure) const; // vraća karakter koji predstavlja figuru u FEN formatu
+    
 };    
 

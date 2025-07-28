@@ -41,6 +41,10 @@ private:
 	sf::RectangleShape applyChangesButton;
 	sf::Text buttonTextApplyChanges;
 
+	sf::RectangleShape checkBox;
+	sf::RectangleShape check;
+	bool isChecked;
+	sf::Text muteText;
 
 	sf::Texture backgroundTexture;
 	sf::Sprite backgroundSprite; 
@@ -64,7 +68,10 @@ public:
 	sf::Sprite getBackgroundSprite() { return backgroundSprite; }
 	sf::RectangleShape getApplyChangesButton() { return applyChangesButton; }
 	sf::Text getButtonTextApplyChanges() { return buttonTextApplyChanges; }	
-
+	sf::RectangleShape getCheckBox() { return checkBox; }
+	sf::RectangleShape getCheck() { return check; }
+	sf::Text getMuteText() { return muteText; }
+	bool getIsChecked() { return isChecked; }
 	sf::RectangleShape getSelectBox() { return selectBox; }
 	sf::Text getSelectedText() { return selectedText; }
 	sf::Text getSelectBoxText() { return selectBoxText; }

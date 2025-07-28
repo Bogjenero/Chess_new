@@ -28,5 +28,6 @@ enum  Strings {
 	BLUE_GRAY,
 	GREEN_MARBLE,
 	SLATE_DARK,
-	APPLY
+	APPLY,
+	MUTE,
 };
