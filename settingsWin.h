@@ -22,6 +22,7 @@
 #include <nlohmann/json.hpp> 
 
 using json = nlohmann::json;
+using namespace sf;
 
 class settingsWin {
 private:
@@ -30,28 +31,30 @@ private:
 	int width;
 	int height;
 
-	sf::RectangleShape buttonBack; 
-	sf::Text buttonTextBack;
+	RectangleShape buttonBack; 
+	Text buttonTextBack;
 
-	sf::Font font; 
+	Font font;
 
-	sf::RectangleShape buttonReset; 
-	sf::Text buttonTextReset;
+	RectangleShape buttonReset; 
+	Text buttonTextReset;
 
-	sf::RectangleShape applyChangesButton;
-	sf::Text buttonTextApplyChanges;
+	RectangleShape applyChangesButton;
+	Text buttonTextApplyChanges;
 
-	sf::RectangleShape checkBox;
-	sf::RectangleShape check;
+	RectangleShape checkBox;
+	RectangleShape check;
 	bool isChecked;
-	sf::Text muteText;
+	Text muteText;
 
-	sf::Texture backgroundTexture;
-	sf::Sprite backgroundSprite; 
+	Text boardStyleText;
 
-	sf::RectangleShape selectBox;
-	sf::Text selectBoxText;
-	sf::Text selectedText;
+	Texture backgroundTexture;
+	Sprite backgroundSprite;
+
+	RectangleShape selectBox;
+	Text selectBoxText;
+	Text selectedText;
 	int selectedIndex;
 
 	std::vector<sf::RectangleShape> optionBoxes;
@@ -61,25 +64,26 @@ private:
 
 public:
 	settingsWin();
-	sf::RectangleShape getButtonBack() { return buttonBack; } 
-	sf::Text getButtonTextBack() { return buttonTextBack; } 
-	sf::RectangleShape getButtonReset() { return buttonReset; }
-	sf::Text getButtonTextReset() { return buttonTextReset; } 
-	sf::Sprite getBackgroundSprite() { return backgroundSprite; }
-	sf::RectangleShape getApplyChangesButton() { return applyChangesButton; }
-	sf::Text getButtonTextApplyChanges() { return buttonTextApplyChanges; }	
-	sf::RectangleShape getCheckBox() { return checkBox; }
-	sf::RectangleShape getCheck() { return check; }
-	sf::Text getMuteText() { return muteText; }
+	RectangleShape getButtonBack() { return buttonBack; } 
+	Text getButtonTextBack() { return buttonTextBack; } 
+	RectangleShape getButtonReset() { return buttonReset; }
+	Text getButtonTextReset() { return buttonTextReset; } 
+	Sprite getBackgroundSprite() { return backgroundSprite; }
+	RectangleShape getApplyChangesButton() { return applyChangesButton; }
+	Text getButtonTextApplyChanges() { return buttonTextApplyChanges; }	
+	RectangleShape getCheckBox() { return checkBox; }
+	RectangleShape& 	 getCheck() { return check; }
+	Text getMuteText() { return muteText; }
 	bool getIsChecked() { return isChecked; }
-	sf::RectangleShape getSelectBox() { return selectBox; }
-	sf::Text getSelectedText() { return selectedText; }
-	sf::Text getSelectBoxText() { return selectBoxText; }
+	RectangleShape getSelectBox() { return selectBox; }
+	Text getSelectedText() { return selectedText; }
+	Text getSelectBoxText() { return selectBoxText; }
 	std::vector<sf::RectangleShape>& getOptionBoxes() { return optionBoxes; }
 	std::vector<sf::Text> getOptionTexts() { return optionTexts; }
 	int getSelectedIndex() const { return selectedIndex; }
 	void setSelectedText(const sf::Text& text) { selectedText = text; }
 	void setSelectedIndex(int index) { selectedIndex = index; }
+	Text getBoardStyleText() { return boardStyleText; }
 	void drawBox();
-
+	void setIsChecked(bool checked) { isChecked = checked; }
 };

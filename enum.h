@@ -30,4 +30,5 @@ enum  Strings {
 	SLATE_DARK,
 	APPLY,
 	MUTE,
+	BOARD_STYLE,
 };

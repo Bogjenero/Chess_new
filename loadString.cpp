@@ -30,8 +30,7 @@ const std::map <Strings, std::wstring> stringMap = {
     { SLATE_DARK, L"slateDark" },
     { APPLY, L"applyChanges" },
     { MUTE, L"Mute" },
-    
-
+    { BOARD_STYLE, L"Choose board style" }
 };
 
 std::wstring load_string(Strings uID) {

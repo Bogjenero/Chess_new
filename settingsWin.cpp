@@ -8,9 +8,12 @@ using namespace sf;
 
 settingsWin::settingsWin() : buttonTextBack(font, load_string(BACK), 30), 
 buttonBack(Vector2f(200, 60)), buttonTextReset(font, load_string(RESET), 30), buttonReset(Vector2f(200, 60)),
-backgroundSprite(backgroundTexture), selectBox(Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), selectedText(font, L"Selected: ", 30),
-applyChangesButton(Vector2f(200, 60)), buttonTextApplyChanges(font, load_string(APPLY), 30), checkBox(Vector2f(20, 20)),
-muteText(font, load_string(MUTE), 20), isChecked(false), selectedIndex(0) 
+backgroundSprite(backgroundTexture), selectBox(Vector2f(200, 60)), selectBoxText(font, L"Select Board", 30), 
+selectedText(font, L"Selected: ", 30),applyChangesButton(Vector2f(200, 60)), 
+buttonTextApplyChanges(font, load_string(APPLY), 30), 
+checkBox(Vector2f(14.f, 14.f)),
+muteText(font, load_string(MUTE), 30), isChecked(false), selectedIndex(0) ,
+boardStyleText(font, load_string(BOARD_STYLE), 22)
 {
     std::ifstream file("Settings.json");
     if (!file.is_open()) {
@@ -28,7 +31,21 @@ muteText(font, load_string(MUTE), 20), isChecked(false), selectedIndex(0)
         
     int selectedIndex = 0;
 
-    applyChangesButton.setPosition(Vector2f((width - 200) / 2.f, 300));
+    muteText.setPosition(Vector2f((width - 200) / 2.f, 130));
+    muteText.setFillColor(Color::White);
+
+    checkBox.setPosition(Vector2f((width - 40) / 2.f, 143));
+    checkBox.setFillColor(Color::White);
+    checkBox.setOutlineThickness(2);
+
+    isChecked = settings["UserOptions"]["mute"].get<bool>();
+
+    check.setSize({14.f, 14.f});
+    check.setPosition(Vector2f((width - 40) / 2.f, 143));
+    check.setFillColor(isChecked ? Color::Green : Color::White);
+
+
+    applyChangesButton.setPosition(Vector2f((width - 200) / 2.f, 400));
     applyChangesButton.setFillColor(Color::Green);
     applyChangesButton.setOutlineThickness(2);
 
@@ -41,31 +58,13 @@ muteText(font, load_string(MUTE), 20), isChecked(false), selectedIndex(0)
 
     buttonTextApplyChanges.setOrigin(Vector2f(textBoundsApply.position.x + textBoundsApply.size.x / 2.0f, textBoundsApply.position.y + textBoundsApply.size.y / 2.0f));
 
-    drawBox();    
+    drawBox();      
 
-    muteText.setFont(font);
-    muteText.setString("Isključi zvuk");
-    muteText.setCharacterSize(20);
-    muteText.setFillColor(Color::Black);
-    muteText.setPosition(Vector2f(50.f, 30.f));  // Gore levo
-
-
-    checkBox.setSize({20.f, 20.f});
-    checkBox.setPosition(Vector2f(200.f, 30.f));
-    checkBox.setFillColor(Color::White);
-    checkBox.setOutlineColor(Color::Black);
-    checkBox.setOutlineThickness(2.f);
-
-
-    check.setSize({14.f, 14.f});
-    check.setPosition(Vector2f(203.f, 33.f));  // Malo unutra u odnosu na checkBox
-    check.setFillColor(Color::Green);
-
-    buttonReset.setPosition(Vector2f((width - 200) / 2.f, 400));
+    buttonReset.setPosition(Vector2f((width - 200) / 2.f, 500));
     buttonReset.setFillColor(Color::Green);
     buttonReset.setOutlineThickness(2);
 
-    buttonBack.setPosition(Vector2f((width - 200) / 2.f, 500));
+    buttonBack.setPosition(Vector2f((width - 200) / 2.f, 600));
     buttonBack.setFillColor(Color::Blue);
     buttonBack.setOutlineThickness(2);
 
@@ -114,7 +113,9 @@ void settingsWin::drawBox() {
     file >> settings;
     int index  = settings["UserOptions"]["board_style_index"];
     
-
+    boardStyleText.setPosition(Vector2f((width - 200) / 2.f, 170));
+    boardStyleText.setFillColor(Color::White);
+    
     for (size_t i = 0; i < boardOptions.size(); ++i) {
         RectangleShape box(Vector2f(200, 30));
         if(index == i) {
@@ -122,12 +123,12 @@ void settingsWin::drawBox() {
         } else {
             box.setFillColor(Color(150, 150, 250));
         }
-        box.setPosition(Vector2f((width - 200) / 2.f, 80 + i * 30)); 
+        box.setPosition(Vector2f((width - 200) / 2.f, 200 + i * 30)); 
         optionBoxes.push_back(box);
 
         Text text(font, load_string(boardOptions[i]), 20);
         text.setFillColor(Color::White);
-        text.setPosition(Vector2f((width - 195) / 2.f, 85 + i * 30));
+        text.setPosition(Vector2f((width - 195) / 2.f, 205 + i * 30));
         optionTexts.push_back(text);
     }
 }    

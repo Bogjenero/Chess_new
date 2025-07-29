@@ -121,7 +121,7 @@ int setTexture(Figure currFigure)
 
 
 chessWin::chessWin(): buttonTextStart( font, load_string(START), 30 ), buttonTextQuit(font,load_string(QUIT),30),buttonTextSettings(font,load_string(SETTINGS),30), 
- backgroundSprite(backgroundTexture), buttonTextEngine(font, load_string(ENGINE), 30), 
+ backgroundSprite(backgroundTexture), buttonTextEngine(font, load_string(ENGINE), 25), 
  buttonTextWhite(font, load_string(CHOOSE_WHITE), 30), buttonTextBlack(font, load_string(CHOOSE_BLACK), 30),
  colorSelectionTitle(font, load_string(COLOR_SELECTION), 30) ,startSound(startBuffer), moveSound(moveBuffer),
  endSound(endBuffer), checkSound(checkBuffer), castlingSound(castlingBuffer)
@@ -442,6 +442,7 @@ void chessWin::handleMouseButtonPressed(std::optional<Event>& event) {
                     break;
                }
             }
+
             if (settingsWindow.getApplyChangesButton().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 std::ofstream file("Settings.json");
                 if (!file.is_open()) {
@@ -450,13 +451,17 @@ void chessWin::handleMouseButtonPressed(std::optional<Event>& event) {
                 else {
                     settings["UserOptions"]["board_style"] = settingsWindow.getSelectedText().getString();
                     settings["UserOptions"]["board_style_index"] = settingsWindow.getSelectedIndex();
-
+                    settings["UserOptions"]["mute"] = settingsWindow.getIsChecked();
                     file << settings.dump(4);
                     file.close();    
                 }
             }
-            if (settingsWindow.getButtonBack().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+            else if (settingsWindow.getButtonBack().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 state = GameState::StartScreen;
+            }
+            else if (settingsWindow.getCheck().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                settingsWindow.setIsChecked(!settingsWindow.getIsChecked());
+                settingsWindow.getCheck().setFillColor(settingsWindow.getIsChecked() ? Color::Green : Color::White);
             }
             else if (settingsWindow.getButtonReset().getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                 //resetGame();
@@ -712,7 +717,7 @@ bool chessWin::Update() {
         {
             win.setMouseCursor(arrowCursor);
         }
-        if(state == GameState::Settings && (settingsWindow.getButtonBack().getGlobalBounds().contains(mousePos) || settingsWindow.getButtonReset().getGlobalBounds().contains(mousePos) || settingsWindow.getApplyChangesButton().getGlobalBounds().contains(mousePos)))
+        if(state == GameState::Settings && (settingsWindow.getButtonBack().getGlobalBounds().contains(mousePos) || settingsWindow.getButtonReset().getGlobalBounds().contains(mousePos) || settingsWindow.getApplyChangesButton().getGlobalBounds().contains(mousePos) || settingsWindow.getCheckBox().getGlobalBounds().contains(mousePos)))
         {
             win.setMouseCursor(handCursor);
         }
@@ -781,10 +786,11 @@ bool chessWin::Update() {
         DrawPieces();
     }
     else if (state == GameState::Settings) {
+        win.draw(settingsWindow.getBackgroundSprite());
         win.draw(settingsWindow.getCheckBox());
         win.draw(settingsWindow.getCheck());
         win.draw(settingsWindow.getMuteText());
-        win.draw(settingsWindow.getBackgroundSprite());
+        win.draw(settingsWindow.getBoardStyleText());
         win.draw(settingsWindow.getApplyChangesButton());
         win.draw(settingsWindow.getButtonTextApplyChanges());
         for (auto& box : settingsWindow.getOptionBoxes()) win.draw(box);
@@ -855,8 +861,7 @@ void chessWin::startGameWithAI(Figure::Colors Color) {
             int fromX = bestMove[0] - 'a';  
             int fromY = 7 - (bestMove[1] - '1');  
             int toX = bestMove[2] - 'a';
-            int toY = 7 - (bestMove[3] - '1');
-            
+            int toY = 7 - (bestMove[3] - '1');        
         
             move m(Point(fromX, fromY), Point(toX, toY));
             std::array<int, 4> replace = {0, 0, 0, 0};
